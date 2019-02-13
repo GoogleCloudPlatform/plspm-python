@@ -28,7 +28,7 @@ rus_blocks = {"AGRI": ["gini", "farm", "rent"],
 plspm_calc = plspm.Plspm(russa, rus_path, rus_blocks, scheme.CENTROID, 100, 0.0000001)
 ```
 
-## Authors contact
+## Maintainers
 
 [Jez Humble](https://continuousdelivery.com/)
   (`humble at google.com`)
