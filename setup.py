@@ -25,10 +25,16 @@ setuptools.setup(
     version="0.0.1",
     author="Jez Humble",
     author_email="humble@google.com",
-    description="A library implementing the Partial Least Squares - Path Model algorithm",
+    description="A library implementing the Partial Least Squares Path Model algorithm",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/googlecloudplatform/plspm-python",
+    install_requires=[
+        "pandas",
+        "numpy",
+        "scipy",
+        "statsmodels"
+    ]
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
