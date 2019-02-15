@@ -34,7 +34,7 @@ setuptools.setup(
         "numpy",
         "scipy",
         "statsmodels"
-    ]
+    ],
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
