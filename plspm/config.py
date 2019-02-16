@@ -45,3 +45,15 @@ class Config:
             raise ValueError("path matrix and lv_config must have matching keys")
         self.__path = path
         self.__lv_config = lv_config
+        blocks = {}
+        for lv in lv_config:
+            blocks[lv] = []
+            for mv in lv_config[lv]["mvs"]:
+                blocks[lv].append(mv["name"])
+        self.__blocks = blocks
+
+    def path(self):
+        return self.__path
+
+    def blocks(self):
+        return self.__blocks

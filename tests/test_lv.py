@@ -15,14 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.weights as ow, pandas as pd
+import plspm.weights as ow, pandas as pd, plspm.util as util
+from plspm.config import Config
 
 def test_mv_should_be_grouped_by_lv():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    rus_blocks = {"AGRI": ["gini", "farm", "rent"],
+    rus_path = pd.DataFrame(
+        [[0, 0, 0],
+         [0, 0, 0],
+         [1, 1, 0]],
+        index=["AGRI", "IND", "POLINS"],
+        columns=["AGRI", "IND", "POLINS"])
+    rus_blocks = util.config_defaults({"AGRI": ["gini", "farm", "rent"],
                   "IND": ["gnpr", "labo"],
-                  "POLINS": ["ecks", "death", "demo"]}
-    ow_calculator = ow.Weights(russa, rus_blocks)
+                  "POLINS": ["ecks", "death", "demo"]}, "A", "NUM")
+    ow_calculator = ow.Weights(russa, Config(rus_path, rus_blocks))
     mv_grouped_by_lv = ow_calculator.mv_grouped_by_lv()
     assert set(["AGRI", "IND", "POLINS"]) == set(mv_grouped_by_lv.keys())
     assert set(["gini", "farm", "rent"]) == set(mv_grouped_by_lv["AGRI"])

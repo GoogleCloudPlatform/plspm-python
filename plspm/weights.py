@@ -21,7 +21,9 @@ pd.options.mode.chained_assignment = None  # default='warn'
 class Weights:
     """Calculate outer weights for partial least squares using Lohmoller's algorithm"""
 
-    def __init__(self, data, blocks):
+    def __init__(self, data, config):
+        self.__config = config
+        blocks = config.blocks()
         self.__inner_model = None
         self.__outer_model = None
         self.__mv_grouped_by_lv = {}
@@ -39,8 +41,7 @@ class Weights:
     # QQ is mv_grouped_by_lv
     # W is weights
     # Y is y matrix (outer estimates)
-    def calculate(self, tolerance, max_iterations, inner_weight_calculator, path):
-        self.__path = path
+    def calculate(self, tolerance, max_iterations, inner_weight_calculator):
         self.__correction = np.sqrt(self.__y.shape[0] / (self.__y.shape[0] - 1))
         iteration = 0
         weights = {}
@@ -48,7 +49,7 @@ class Weights:
         while True:
             iteration += 1
             y_old = self.__y.copy()
-            inner_weights = inner_weight_calculator.calculate(path, self.__y)
+            inner_weights = inner_weight_calculator.calculate(self.__config.path(), self.__y)
             Z = self.__y.dot(inner_weights)
             for lv in list(self.__y):
                 # If not mode B and there is more than one MV in our LV, we're going to scale.
@@ -76,7 +77,7 @@ class Weights:
 
     def inner_model(self):
         if (self.__inner_model == None):
-            self.__inner_model = im.InnerModel(self.__path, self.__y)
+            self.__inner_model = im.InnerModel(self.__config.path(), self.__y)
         return self.__inner_model
 
     def outer_model(self):

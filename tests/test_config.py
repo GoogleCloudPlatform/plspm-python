@@ -44,7 +44,7 @@ def test_config_rejects_path_and_lv_config_not_matching():
     [[0, 0, 0],
      [0, 0, 0],
      [1, 1, 0]],
-    index=["AGRI", "IND", "POLINS"],
-    columns=["AGRI", "IND", "POLINS"])
-    # with pytest.raises(ValueError):
-    Config(path, config_test_values())
+    index=["AGRI", "MANDRILL", "POLINS"],
+    columns=["AGRI", "MANDRILL", "POLINS"])
+    with pytest.raises(ValueError):
+        Config(path, config_test_values())

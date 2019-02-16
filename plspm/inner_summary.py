@@ -19,7 +19,9 @@ import pandas as pd
 
 class InnerSummary:
 
-    def __init__(self, path, blocks, inner_model, outer_model):
+    def __init__(self, config, inner_model, outer_model):
+        path = config.path()
+        blocks = config.blocks()
         lv_type = path.sum(axis=1).astype(bool).replace(False, "Exogenous").replace(True, "Endogenous")
         lv_type.name = "type"
         block_communality = pd.Series(0, index=path.index, name="block_communality")

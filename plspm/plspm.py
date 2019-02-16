@@ -16,14 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import plspm.weights as ow, plspm.inner_summary as pis
+from plspm.config import Config
 
 class Plspm:
 
-    def __init__(self, input_data, path, blocks, scheme, iterations = 100, tolerance = 0.000001):
-        self.__path = path
-        self.__blocks = blocks
-        self.__outer_weights = ow.Weights(input_data, blocks)
-        self.__outer_weights.calculate(tolerance, iterations, scheme, path)
+    def __init__(self, input_data, path, lv_config, scheme, iterations = 100, tolerance = 0.000001):
+        self.__config = Config(path, lv_config)
+        self.__outer_weights = ow.Weights(input_data, self.__config)
+        self.__outer_weights.calculate(tolerance, iterations, scheme)
 
     def scores(self):
         return self.__outer_weights.scores()
@@ -41,4 +41,4 @@ class Plspm:
         return self.__outer_weights.outer_model().crossloadings()
 
     def inner_summary(self):
-        return pis.InnerSummary(self.__path, self.__blocks, self.__outer_weights.inner_model(), self.outer_model()).summary()
+        return pis.InnerSummary(self.__config, self.__outer_weights.inner_model(), self.outer_model()).summary()

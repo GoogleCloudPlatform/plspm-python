@@ -26,9 +26,9 @@ def test_plspm_russa():
          [1, 1, 0]],
         index=["AGRI", "IND", "POLINS"],
         columns=["AGRI", "IND", "POLINS"])
-    rus_blocks = {"AGRI": ["gini", "farm", "rent"],
+    rus_blocks = util.config_defaults({"AGRI": ["gini", "farm", "rent"],
                   "IND": ["gnpr", "labo"],
-                  "POLINS": ["ecks", "death", "demo", "inst"]}
+                  "POLINS": ["ecks", "death", "demo", "inst"]}, "A", "NUM")
 
     plspm_calc = Plspm(russa, rus_path, rus_blocks, scheme.CENTROID, 100, 0.0000001)
     expected_scores = pd.read_csv("file:tests/data/russa.scores.csv", index_col=0)
