@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, plspm.scheme as scheme, plspm.weights as ow, plspm.inner_summary as pis
+import plspm.weights as ow, plspm.inner_summary as pis
 
 class Plspm:
 

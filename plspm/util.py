@@ -45,3 +45,12 @@ def list_to_dummy(data):
         dummy = pd.DataFrame(1, index=data[col], columns=[col])
         matrix = pd.concat([matrix, dummy], axis=1, sort=False)
     return matrix.fillna(0)
+
+def config_defaults(config, default_mode, default_type):
+    lv_config = {}
+    for lv in config:
+        lv_default = []
+        for mv in config[lv]:
+            lv_default.append({ "name": mv, "type": default_type})
+        lv_config[lv] = {"mvs": lv_default, "mode": default_mode}
+    return lv_config

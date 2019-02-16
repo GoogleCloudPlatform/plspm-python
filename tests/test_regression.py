@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas.testing as pt, pandas as pd, math, plspm.scheme as scheme, plspm.weights as ow, plspm.util as util, numpy.testing as npt
-from operator import itemgetter
+import pandas.testing as pt, pandas as pd, plspm.scheme as scheme, plspm.util as util, numpy.testing as npt
 from plspm.plspm import Plspm
 
 def test_plspm_russa():

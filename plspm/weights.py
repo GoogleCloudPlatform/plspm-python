@@ -38,7 +38,7 @@ class Weights:
     # E is inner_weights
     # QQ is mv_grouped_by_lv
     # W is weights
-    # Y is y matrix
+    # Y is y matrix (outer estimates)
     def calculate(self, tolerance, max_iterations, inner_weight_calculator, path):
         self.__path = path
         self.__correction = np.sqrt(self.__y.shape[0] / (self.__y.shape[0] - 1))
