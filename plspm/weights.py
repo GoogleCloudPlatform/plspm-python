@@ -16,7 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np, pandas as pd, plspm.util as util, plspm.outer_model as om, plspm.inner_model as im
+
 pd.options.mode.chained_assignment = None  # default='warn'
+
 
 class Weights:
     """Calculate outer weights for partial least squares using Lohmoller's algorithm"""
@@ -59,7 +61,8 @@ class Weights:
                     self.__mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
 
                 # This is the Mode A algorithm for updating outer weights (get_weights_nonmetric lines 190-192)
-                weights[lv] = (self.__mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
+                weights[lv] = (self.__mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]],
+                                                                                                       2).sum()
                 self.__y.loc[:, [lv]] = self.__mv_grouped_by_lv[lv].dot(weights[lv])
                 self.__y.loc[:, [lv]] = self.__y.loc[:, [lv]] * self.__correction / self.__y.loc[:, [lv]].std()
             convergence = np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
@@ -82,5 +85,6 @@ class Weights:
 
     def outer_model(self):
         if (self.__outer_model == None):
-            self.__outer_model = om.OuterModel(self.__y, self.__weights, self.__mv_grouped_by_lv, self.__odm, self.__correction, self.inner_model().r_squared())
+            self.__outer_model = om.OuterModel(self.__y, self.__weights, self.__mv_grouped_by_lv, self.__odm,
+                                               self.__correction, self.inner_model().r_squared())
         return self.__outer_model

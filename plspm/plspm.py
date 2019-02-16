@@ -18,9 +18,10 @@
 import plspm.weights as ow, plspm.inner_summary as pis
 from plspm.config import Config
 
+
 class Plspm:
 
-    def __init__(self, input_data, path, lv_config, scheme, iterations = 100, tolerance = 0.000001):
+    def __init__(self, input_data, path, lv_config, scheme, iterations=100, tolerance=0.000001):
         self.__config = Config(path, lv_config)
         self.__outer_weights = ow.Weights(input_data, self.__config)
         self.__outer_weights.calculate(tolerance, iterations, scheme)

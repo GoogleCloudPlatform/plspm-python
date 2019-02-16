@@ -17,13 +17,14 @@
 
 import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util
 
+
 def test_impute_missing_values():
     input = pd.DataFrame(
-        {"a" : [1, 2, np.NaN, 3, np.NaN],
+        {"a": [1, 2, np.NaN, 3, np.NaN],
          "b": [1, 2, 3, 4, 5],
          "c": [1, np.NaN, 3, 0, 4]})
     expected_output = pd.DataFrame(
-        {"a" : [1, 2, 2, 3, 2],
+        {"a": [1, 2, 2, 3, 2],
          "b": [1, 2, 3, 4, 5],
          "c": [1, 2, 3, 0, 4]})
     npt.assert_array_equal(expected_output, util.impute(input))

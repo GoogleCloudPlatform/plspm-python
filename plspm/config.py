@@ -17,6 +17,7 @@
 
 import pandas as pd, numpy as np, numpy.testing as npt
 
+
 class Config:
 
     def __init__(self, path, lv_config):

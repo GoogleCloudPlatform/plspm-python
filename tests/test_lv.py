@@ -18,6 +18,7 @@
 import plspm.weights as ow, pandas as pd, plspm.util as util
 from plspm.config import Config
 
+
 def test_mv_should_be_grouped_by_lv():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     rus_path = pd.DataFrame(
@@ -26,9 +27,10 @@ def test_mv_should_be_grouped_by_lv():
          [1, 1, 0]],
         index=["AGRI", "IND", "POLINS"],
         columns=["AGRI", "IND", "POLINS"])
-    rus_blocks = util.config_defaults({"AGRI": ["gini", "farm", "rent"],
-                  "IND": ["gnpr", "labo"],
-                  "POLINS": ["ecks", "death", "demo"]}, "A", "NUM")
+    rus_blocks = util.config_defaults({
+        "AGRI": ["gini", "farm", "rent"],
+        "IND": ["gnpr", "labo"],
+        "POLINS": ["ecks", "death", "demo"]}, "A", "NUM")
     ow_calculator = ow.Weights(russa, Config(rus_path, rus_blocks))
     mv_grouped_by_lv = ow_calculator.mv_grouped_by_lv()
     assert set(["AGRI", "IND", "POLINS"]) == set(mv_grouped_by_lv.keys())

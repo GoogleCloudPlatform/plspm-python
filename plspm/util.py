@@ -17,14 +17,17 @@
 
 import numpy as np, pandas as pd, math
 
+
 def treat(data):
     """Centers, scales and ranks a matrix"""
     rows = data.shape[0]
     rank = np.sqrt((rows - 1.0) / rows)
-    return data.subtract(data.mean()).divide(data.std()).apply(lambda x : x / rank)
+    return data.subtract(data.mean()).divide(data.std()).apply(lambda x: x / rank)
+
 
 def sort_cols(data):
     return data.reindex(sorted(data.columns), axis=1)
+
 
 def impute(data):
     for column in list(data):
@@ -33,11 +36,13 @@ def impute(data):
         assert math.isclose(data[column].mean(), average, rel_tol=1e-09, abs_tol=0.0)
     return data
 
+
 def list_to_matrix(data):
     matrix = pd.DataFrame()
     for col in data:
         matrix = pd.concat([matrix, data[col]], axis=1, sort=False)
     return matrix.fillna(0)
+
 
 def list_to_dummy(data):
     matrix = pd.DataFrame()
@@ -46,11 +51,12 @@ def list_to_dummy(data):
         matrix = pd.concat([matrix, dummy], axis=1, sort=False)
     return matrix.fillna(0)
 
+
 def config_defaults(config, default_mode, default_type):
     lv_config = {}
     for lv in config:
         lv_default = []
         for mv in config[lv]:
-            lv_default.append({ "name": mv, "type": default_type})
+            lv_default.append({"name": mv, "type": default_type})
         lv_config[lv] = {"mvs": lv_default, "mode": default_mode}
     return lv_config

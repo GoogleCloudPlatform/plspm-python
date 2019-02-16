@@ -18,16 +18,20 @@
 import pandas as pd, pytest, plspm.util as util
 from plspm.config import Config
 
+
 def config_test_values():
-    return util.config_defaults({"AGRI": ["gini", "farm", "rent"],
-              "IND": ["gnpr", "labo"],
-              "POLINS": ["ecks", "death", "demo", "inst"]}, "A", "NUM")
+    return util.config_defaults({
+        "AGRI": ["gini", "farm", "rent"],
+        "IND": ["gnpr", "labo"],
+        "POLINS": ["ecks", "death", "demo", "inst"]}, "A", "NUM")
+
 
 def test_config_rejects_wrong_types():
     with pytest.raises(TypeError):
         Config(pd.DataFrame(), "boo")
     with pytest.raises(TypeError):
         Config("hello!", config_test_values())
+
 
 def test_config_rejects_bad_path_matrix():
     with pytest.raises(ValueError):
@@ -37,14 +41,15 @@ def test_config_rejects_bad_path_matrix():
     with pytest.raises(ValueError):
         Config(pd.DataFrame([[1, 0], [2, 1]]), config_test_values())
     with pytest.raises(ValueError):
-        Config(pd.DataFrame([[1, 0],[1, 1]], index=["A", "B"], columns=["C", "D"]), config_test_values())
+        Config(pd.DataFrame([[1, 0], [1, 1]], index=["A", "B"], columns=["C", "D"]), config_test_values())
+
 
 def test_config_rejects_path_and_lv_config_not_matching():
     path = pd.DataFrame(
-    [[0, 0, 0],
-     [0, 0, 0],
-     [1, 1, 0]],
-    index=["AGRI", "MANDRILL", "POLINS"],
-    columns=["AGRI", "MANDRILL", "POLINS"])
+        [[0, 0, 0],
+         [0, 0, 0],
+         [1, 1, 0]],
+        index=["AGRI", "MANDRILL", "POLINS"],
+        columns=["AGRI", "MANDRILL", "POLINS"])
     with pytest.raises(ValueError):
         Config(path, config_test_values())

@@ -23,23 +23,26 @@ class _CentroidInnerWeightCalculator:
     def calculate(self, path, y):
         return y.corr().mul(path + path.transpose()).apply(lambda x: np.sign(x))
 
+
 class _FactorialInnerWeightCalculator:
 
     def calculate(self, path, y):
         return y.cov().mul(path + path.transpose())
+
 
 class _PathInnerWeightCalculator:
 
     def calculate(self, path, y):
         E = path.copy()
         for column in list(E):
-            follow = path.loc[column,:] == 1
-            if path.loc[column,:].sum() > 0:
-                E.loc[follow,column] = sm.OLS(y.loc[:,column], y.loc[:,follow]).fit().params
-            predec = path.loc[:,column] == 1
-            if path.loc[:,column].sum() > 0:
-                E.loc[predec,column] = y.loc[:,predec].corrwith(y.loc[:,column])
+            follow = path.loc[column, :] == 1
+            if path.loc[column, :].sum() > 0:
+                E.loc[follow, column] = sm.OLS(y.loc[:, column], y.loc[:, follow]).fit().params
+            predec = path.loc[:, column] == 1
+            if path.loc[:, column].sum() > 0:
+                E.loc[predec, column] = y.loc[:, predec].corrwith(y.loc[:, column])
         return E
+
 
 CENTROID = _CentroidInnerWeightCalculator()
 PATH = _PathInnerWeightCalculator()

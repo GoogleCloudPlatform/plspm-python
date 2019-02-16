@@ -17,6 +17,7 @@
 
 import plspm.util as util, pandas as pd, numpy as np, statsmodels.api as sm
 
+
 def summary(regression):
     summary = pd.DataFrame(0, columns=['estimate', 'std error', 't', 'p>|t|'], index=regression.params.index)
     summary['estimate'] = regression.params
@@ -24,6 +25,7 @@ def summary(regression):
     summary['t'] = regression.tvalues
     summary['p>|t|'] = regression.pvalues
     return summary
+
 
 class InnerModel:
 

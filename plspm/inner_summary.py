@@ -17,6 +17,7 @@
 
 import pandas as pd
 
+
 class InnerSummary:
 
     def __init__(self, config, inner_model, outer_model):
@@ -28,13 +29,14 @@ class InnerSummary:
         mean_redundancy = pd.Series(0, index=path.index, name="mean_redundancy")
         ave = pd.Series(0, index=path.index, name="ave")
         for lv in blocks:
-            communality = outer_model.loc[:,"communality"].loc[blocks[lv]]
+            communality = outer_model.loc[:, "communality"].loc[blocks[lv]]
             block_communality.loc[lv] = communality.mean()
-            mean_redundancy.loc[lv] = outer_model.loc[:,"redundancy"].loc[blocks[lv]].mean()
+            mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[blocks[lv]].mean()
             ave_numerator = communality.sum()
             ave_denominator = ave_numerator + (1 - communality).sum()
             ave.loc[lv] = ave_numerator / ave_denominator
-        self.__summary = pd.concat([lv_type, inner_model.r_squared(), block_communality, mean_redundancy, ave], axis=1, sort=True)
+        self.__summary = pd.concat([lv_type, inner_model.r_squared(), block_communality, mean_redundancy, ave], axis=1,
+                                   sort=True)
 
     def summary(self):
         return self.__summary
