@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd
+import pandas as pd, plspm.mode as mode
 
 
 class InnerSummary:
@@ -32,9 +32,10 @@ class InnerSummary:
             communality = outer_model.loc[:, "communality"].loc[blocks[lv]]
             block_communality.loc[lv] = communality.mean()
             mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[blocks[lv]].mean()
-            ave_numerator = communality.sum()
-            ave_denominator = ave_numerator + (1 - communality).sum()
-            ave.loc[lv] = ave_numerator / ave_denominator
+            if (config.mode(lv) == mode.A):
+                ave_numerator = communality.sum()
+                ave_denominator = ave_numerator + (1 - communality).sum()
+                ave.loc[lv] = ave_numerator / ave_denominator
         self.__summary = pd.concat([lv_type, inner_model.r_squared(), block_communality, mean_redundancy, ave], axis=1,
                                    sort=True)
 

@@ -1,0 +1,4 @@
+"","type","r_squared","block_communality","mean_redundancy","ave"
+"AGRI","Exogenous",0,0.282806968997176,0,0
+"IND","Exogenous",0,0.901296336991962,0,0
+"POLINS","Endogenous",0.642916068732587,0.436484677089836,0.28062301265661,0

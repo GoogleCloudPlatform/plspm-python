@@ -58,3 +58,6 @@ class Config:
 
     def blocks(self):
         return self.__blocks
+
+    def mode(self, lv):
+        return self.__lv_config[lv]["mode"]

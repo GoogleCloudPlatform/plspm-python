@@ -43,11 +43,11 @@ class Weights:
     # QQ is mv_grouped_by_lv
     # W is weights
     # Y is y matrix (outer estimates)
+    # Z is inner estimate of LV (Y.dot(inner_weights))
     def calculate(self, tolerance, max_iterations, inner_weight_calculator):
         self.__correction = np.sqrt(self.__y.shape[0] / (self.__y.shape[0] - 1))
         iteration = 0
         weights = {}
-        y_old = None
         while True:
             iteration += 1
             y_old = self.__y.copy()
@@ -60,11 +60,8 @@ class Weights:
                     mv_values = self.__mv_grouped_by_lv[lv].loc[:, [mv]]
                     self.__mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
 
-                # This is the Mode A algorithm for updating outer weights (get_weights_nonmetric lines 190-192)
-                weights[lv] = (self.__mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]],
-                                                                                                       2).sum()
-                self.__y.loc[:, [lv]] = self.__mv_grouped_by_lv[lv].dot(weights[lv])
-                self.__y.loc[:, [lv]] = self.__y.loc[:, [lv]] * self.__correction / self.__y.loc[:, [lv]].std()
+                self.__config.mode(lv).update_outer_weights(self.__mv_grouped_by_lv, weights, self.__y, Z, lv,
+                                                            self.__correction)
             convergence = np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
             if (convergence < tolerance) or (iteration > max_iterations):
                 break
