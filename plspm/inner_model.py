@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.util as util, pandas as pd, numpy as np, statsmodels.api as sm
+import pandas as pd, statsmodels.api as sm
 
 
 def summary(regression):
@@ -29,7 +29,7 @@ def summary(regression):
 
 class InnerModel:
 
-    def __init__(self, path, y):
+    def __init__(self, path: pd.DataFrame, y: pd.DataFrame):
         self.__summaries = {}
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
         self.__path_coefficients = pd.DataFrame(0, columns=path.columns, index=path.index)

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np, pandas as pd, plspm.util as util, plspm.outer_model as om, plspm.inner_model as im
+from plspm.config import Config
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -23,7 +24,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 class Weights:
     """Calculate outer weights for partial least squares using Lohmoller's algorithm"""
 
-    def __init__(self, data, config):
+    def __init__(self, data: pd.DataFrame, config: Config):
         self.__config = config
         self.__inner_model = None
         self.__outer_model = None
@@ -34,7 +35,7 @@ class Weights:
     # W is weights
     # Y is y matrix (outer estimates)
     # Z is inner estimate of LV (Y.dot(inner_weights))
-    def calculate(self, tolerance, max_iterations, inner_weight_calculator):
+    def calculate(self, tolerance: float, max_iterations: int, inner_weight_calculator):
         blocks = self.__config.blocks()
         mv_grouped_by_lv = {}
         y = pd.DataFrame(data=0, index=self.__data.index, columns=blocks.keys())

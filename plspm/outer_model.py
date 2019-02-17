@@ -20,7 +20,7 @@ import plspm.util as util, pandas as pd, numpy as np
 
 class OuterModel:
 
-    def __init__(self, y, weights, mv_grouped_by_lv, odm, correction, r_squared):
+    def __init__(self, y: pd.DataFrame, weights: pd.DataFrame, mv_grouped_by_lv: list, odm: pd.DataFrame, correction: float, r_squared):
         weights_as_matrix = util.list_to_matrix(weights)
         quantified_mvs = util.list_to_matrix(mv_grouped_by_lv)
         weight_factors = 1 / (quantified_mvs.dot(weights_as_matrix).std(axis=0, skipna=True) / correction)

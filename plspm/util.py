@@ -18,18 +18,18 @@
 import numpy as np, pandas as pd, math
 
 
-def treat(data):
+def treat(data: pd.DataFrame):
     """Centers, scales and ranks a matrix"""
     rows = data.shape[0]
     rank = np.sqrt((rows - 1.0) / rows)
     return data.subtract(data.mean()).divide(data.std()).apply(lambda x: x / rank)
 
 
-def sort_cols(data):
+def sort_cols(data: pd.DataFrame):
     return data.reindex(sorted(data.columns), axis=1)
 
 
-def impute(data):
+def impute(data: pd.DataFrame):
     for column in list(data):
         average = data[column].mean(skipna=True)
         data[column].fillna(average, inplace=True)
@@ -37,26 +37,16 @@ def impute(data):
     return data
 
 
-def list_to_matrix(data):
+def list_to_matrix(data: pd.DataFrame):
     matrix = pd.DataFrame()
     for col in data:
         matrix = pd.concat([matrix, data[col]], axis=1, sort=False)
     return matrix.fillna(0)
 
 
-def list_to_dummy(data):
+def list_to_dummy(data: pd.DataFrame):
     matrix = pd.DataFrame()
     for col in data:
         dummy = pd.DataFrame(1, index=data[col], columns=[col])
         matrix = pd.concat([matrix, dummy], axis=1, sort=False)
     return matrix.fillna(0)
-
-
-def config_defaults(config, default_mode, default_type):
-    lv_config = {}
-    for lv in config:
-        lv_default = []
-        for mv in config[lv]:
-            lv_default.append({"name": mv, "type": default_type})
-        lv_config[lv] = {"mvs": lv_default, "mode": default_mode}
-    return lv_config

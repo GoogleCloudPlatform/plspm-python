@@ -17,14 +17,21 @@
 
 import pandas as pd, numpy as np, numpy.testing as npt
 
+class MV:
+    def __init__(self, name: str):
+        self.__name = name
+
+    def name(self):
+        return self.__name
+
 
 class Config:
 
-    def __init__(self, path, lv_config):
+    def __init__(self, path: pd.DataFrame):
+        self.__modes = {}
+        self.__blocks = {}
         if not isinstance(path, pd.DataFrame):
             raise TypeError("path argument must be a Pandas DataFrame")
-        if not isinstance(lv_config, dict):
-            raise TypeError("lv_config argument must be a dictionary")
         path_shape = path.shape
         if path_shape[0] != path_shape[1]:
             raise ValueError("path argument must be a square matrix")
@@ -38,20 +45,7 @@ class Config:
             npt.assert_array_equal(path.columns.values, path.index.values)
         except:
             raise ValueError("path matrix must have matching row and column index names")
-        lv_config_keys = pd.Series(list(lv_config.keys())).sort_values()
-        path_column_titles = pd.Series(path.columns.values).sort_values()
-        try:
-            npt.assert_array_equal(lv_config_keys, path_column_titles)
-        except:
-            raise ValueError("path matrix and lv_config must have matching keys")
         self.__path = path
-        self.__lv_config = lv_config
-        blocks = {}
-        for lv in lv_config:
-            blocks[lv] = []
-            for mv in lv_config[lv]["mvs"]:
-                blocks[lv].append(mv["name"])
-        self.__blocks = blocks
 
     def path(self):
         return self.__path
@@ -59,5 +53,13 @@ class Config:
     def blocks(self):
         return self.__blocks
 
-    def mode(self, lv):
-        return self.__lv_config[lv]["mode"]
+    def mode(self, lv: str):
+        return self.__modes[lv]
+
+    def add_lv(self, name: str, mode, *mvs: MV):
+        if name not in self.__path:
+            raise ValueError("Path matrix does not contain reference to latent variable " + name)
+        self.__modes[name] = mode
+        self.__blocks[name] = []
+        for mv in mvs:
+            self.__blocks[name].append(mv.name())

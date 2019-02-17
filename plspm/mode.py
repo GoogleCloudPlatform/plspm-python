@@ -20,7 +20,7 @@ import numpy as np, pandas as pd, scipy.linalg as linalg
 
 class _ModeA:
 
-    def update_outer_weights(self, mv_grouped_by_lv, Z, lv, correction):
+    def update_outer_weights(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float):
         weights = (mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
         Y = mv_grouped_by_lv[lv].dot(weights)
         Y = Y * correction / Y.std()
@@ -29,7 +29,7 @@ class _ModeA:
 
 class _ModeB:
 
-    def update_outer_weights(self, mv_grouped_by_lv, Z, lv, correction):
+    def update_outer_weights(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float):
         w, _, _, _ = linalg.lstsq(mv_grouped_by_lv[lv], Z.loc[:, [lv]])
         weights = pd.DataFrame(w, columns=[lv], index=mv_grouped_by_lv[lv].columns.values)
         Y = mv_grouped_by_lv[lv].dot(weights)
