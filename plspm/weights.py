@@ -25,19 +25,9 @@ class Weights:
 
     def __init__(self, data, config):
         self.__config = config
-        blocks = config.blocks()
         self.__inner_model = None
         self.__outer_model = None
-        self.__mv_grouped_by_lv = {}
-        self.__treated_data = util.treat(data)
-        self.__y = pd.DataFrame(data=0, index=data.index, columns=blocks.keys())
-        self.__odm = util.list_to_dummy(blocks)
-
-        for lv in blocks:
-            self.__mv_grouped_by_lv[lv] = self.__treated_data.filter(blocks[lv])
-            sizes = self.__mv_grouped_by_lv[lv].shape[1]
-            weight = [1 / np.sqrt(sizes)] * sizes
-            self.__y.loc[:, [lv]] = self.__mv_grouped_by_lv[lv].dot(weight)
+        self.__data = util.treat(data)
 
     # E is inner_weights
     # QQ is mv_grouped_by_lv
@@ -45,29 +35,41 @@ class Weights:
     # Y is y matrix (outer estimates)
     # Z is inner estimate of LV (Y.dot(inner_weights))
     def calculate(self, tolerance, max_iterations, inner_weight_calculator):
-        self.__correction = np.sqrt(self.__y.shape[0] / (self.__y.shape[0] - 1))
+        blocks = self.__config.blocks()
+        mv_grouped_by_lv = {}
+        y = pd.DataFrame(data=0, index=self.__data.index, columns=blocks.keys())
+        for lv in blocks:
+            mv_grouped_by_lv[lv] = self.__data.filter(blocks[lv])
+            sizes = mv_grouped_by_lv[lv].shape[1]
+            weight = [1 / np.sqrt(sizes)] * sizes
+            y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weight)
+        correction = np.sqrt(y.shape[0] / (y.shape[0] - 1))
         iteration = 0
         weights = {}
         while True:
             iteration += 1
-            y_old = self.__y.copy()
-            inner_weights = inner_weight_calculator.calculate(self.__config.path(), self.__y)
-            Z = self.__y.dot(inner_weights)
-            for lv in list(self.__y):
+            y_old = y.copy()
+            inner_weights = inner_weight_calculator.calculate(self.__config.path(), y)
+            Z = y.dot(inner_weights)
+            for lv in list(y):
                 # If not mode B and there is more than one MV in our LV, we're going to scale.
                 # This loop is a numerical scaling (get_num_scale in R plspm, get_weights_nonmetric line 162)
-                for mv in list(self.__mv_grouped_by_lv[lv]):
-                    mv_values = self.__mv_grouped_by_lv[lv].loc[:, [mv]]
-                    self.__mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
+                for mv in list(mv_grouped_by_lv[lv]):
+                    mv_values = mv_grouped_by_lv[lv].loc[:, [mv]]
+                    mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * correction / mv_values.std()
 
-                weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).update_outer_weights(
-                    self.__mv_grouped_by_lv, Z, lv, self.__correction)
-            convergence = np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
+                weights[lv], y.loc[:, [lv]] = self.__config.mode(lv).update_outer_weights(mv_grouped_by_lv, Z, lv,
+                                                                                          correction)
+            convergence = np.power(y_old.abs() - y.abs(), 2).sum(axis=1).sum(axis=0)
             if (convergence < tolerance) or (iteration > max_iterations):
                 break
         if iteration > max_iterations:
             raise Exception("500 Could not converge after " + str(iteration) + " iterations")
+        self.__y = y
+        self.__mv_grouped_by_lv = mv_grouped_by_lv
         self.__weights = weights
+        self.__odm = util.list_to_dummy(blocks)
+        self.__correction = correction
 
     def scores(self):
         return self.__y
