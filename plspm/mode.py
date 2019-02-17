@@ -20,19 +20,21 @@ import numpy as np, pandas as pd, scipy.linalg as linalg
 
 class _ModeA:
 
-    def update_outer_weights(self, mv_grouped_by_lv, weights, Y, Z, lv, correction):
-        weights[lv] = (mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
-        Y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weights[lv])
-        Y.loc[:, [lv]] = Y.loc[:, [lv]] * correction / Y.loc[:, [lv]].std()
+    def update_outer_weights(self, mv_grouped_by_lv, Z, lv, correction):
+        weights = (mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
+        Y = mv_grouped_by_lv[lv].dot(weights)
+        Y = Y * correction / Y.std()
+        return weights, Y
 
 
 class _ModeB:
 
-    def update_outer_weights(self, mv_grouped_by_lv, weights, Y, Z, lv, correction):
+    def update_outer_weights(self, mv_grouped_by_lv, Z, lv, correction):
         w, _, _, _ = linalg.lstsq(mv_grouped_by_lv[lv], Z.loc[:, [lv]])
-        weights[lv] = pd.DataFrame(w, columns=[lv], index=mv_grouped_by_lv[lv].columns.values)
-        Y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weights[lv])
-        Y.loc[:, [lv]] = Y.loc[:, [lv]] * correction / Y.loc[:, [lv]].std()
+        weights = pd.DataFrame(w, columns=[lv], index=mv_grouped_by_lv[lv].columns.values)
+        Y = mv_grouped_by_lv[lv].dot(weights)
+        Y = Y * correction / Y.std()
+        return weights, Y
 
 
 A = _ModeA()

@@ -60,8 +60,8 @@ class Weights:
                     mv_values = self.__mv_grouped_by_lv[lv].loc[:, [mv]]
                     self.__mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
 
-                self.__config.mode(lv).update_outer_weights(self.__mv_grouped_by_lv, weights, self.__y, Z, lv,
-                                                            self.__correction)
+                weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).update_outer_weights(
+                    self.__mv_grouped_by_lv, Z, lv, self.__correction)
             convergence = np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
             if (convergence < tolerance) or (iteration > max_iterations):
                 break
