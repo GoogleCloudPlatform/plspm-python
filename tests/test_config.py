@@ -56,3 +56,17 @@ def test_config_returns_correct_mode_and_mvs():
     config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     assert config.mode("AGRI") == mode.A
     npt.assert_array_equal(config.blocks()["AGRI"], ["gini", "farm", "rent"])
+
+
+def test_config_rejects_missing_mvs():
+    russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
+    config = c.Config(config_test_path_matrix())
+    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("poo"))
+    with pytest.raises(ValueError):
+        config.filter(russa)
+
+def test_config_filters_mvs():
+    russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
+    config = c.Config(config_test_path_matrix())
+    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    npt.assert_array_equal(list(config.filter(russa)), ["gini", "farm", "rent"])

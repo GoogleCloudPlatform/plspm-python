@@ -28,7 +28,7 @@ class Weights:
         self.__config = config
         self.__inner_model = None
         self.__outer_model = None
-        self.__data = util.treat(data)
+        self.__data = util.treat(config.filter(data))
 
     # E is inner_weights
     # QQ is mv_grouped_by_lv

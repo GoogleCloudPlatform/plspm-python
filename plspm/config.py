@@ -17,6 +17,7 @@
 
 import pandas as pd, numpy as np, numpy.testing as npt
 
+
 class MV:
     def __init__(self, name: str):
         self.__name = name
@@ -30,6 +31,7 @@ class Config:
     def __init__(self, path: pd.DataFrame):
         self.__modes = {}
         self.__blocks = {}
+        self.__mvs = {}
         if not isinstance(path, pd.DataFrame):
             raise TypeError("path argument must be a Pandas DataFrame")
         path_shape = path.shape
@@ -63,3 +65,11 @@ class Config:
         self.__blocks[name] = []
         for mv in mvs:
             self.__blocks[name].append(mv.name())
+            self.__mvs[mv.name()] = ""
+
+    def filter(self, data: pd.DataFrame):
+        if not set(self.__mvs.keys()).issubset(set(data)):
+            raise ValueError(
+                "The following manifest variables you configured are not present in the data set: " + ", ".join(
+                    set(self.__mvs.keys()).difference(set(data))))
+        return data[list(self.__mvs.keys())]
