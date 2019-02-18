@@ -31,7 +31,7 @@ def russa_path_matrix():
 
 def test_plspm_russa():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(russa_path_matrix())
+    config = c.Config(russa_path_matrix(), default_scale=1)
     config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     config.add_lv("IND", mode.A, c.MV("gnpr"), c.MV("labo"))
     config.add_lv("POLINS", mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
@@ -79,7 +79,7 @@ def test_plspm_russa():
 
 def test_plspm_russa_mode_b():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(russa_path_matrix())
+    config = c.Config(russa_path_matrix(), default_scale=1)
     config.add_lv("AGRI", mode.B, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     config.add_lv("IND", mode.B, c.MV("gnpr"), c.MV("labo"))
     config.add_lv("POLINS", mode.B, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))

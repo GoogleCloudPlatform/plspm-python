@@ -15,23 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, numpy as np, numpy.testing as npt
+import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util
 
 
 class MV:
-    def __init__(self, name: str):
+    def __init__(self, name: str, scale=None):
+        self.__scale = scale
         self.__name = name
 
     def name(self):
         return self.__name
 
+    def scale(self):
+        return self.__scale
+
 
 class Config:
 
-    def __init__(self, path: pd.DataFrame):
+    def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale=None):
         self.__modes = {}
         self.__blocks = {}
         self.__mvs = {}
+        self.__scaled = scaled
+        self.__metric = True
+        self.__default_scale = default_scale
         if not isinstance(path, pd.DataFrame):
             raise TypeError("path argument must be a Pandas DataFrame")
         path_shape = path.shape
@@ -58,6 +65,9 @@ class Config:
     def mode(self, lv: str):
         return self.__modes[lv]
 
+    def metric(self):
+        return self.__metric
+
     def add_lv(self, name: str, mode, *mvs: MV):
         if name not in self.__path:
             raise ValueError("Path matrix does not contain reference to latent variable " + name)
@@ -65,11 +75,23 @@ class Config:
         self.__blocks[name] = []
         for mv in mvs:
             self.__blocks[name].append(mv.name())
-            self.__mvs[mv.name()] = ""
+            scale = self.__default_scale if mv.scale() is None else mv.scale()
+            self.__mvs[mv.name()] = scale
+            if scale is not None:
+                self.__metric = False
 
     def filter(self, data: pd.DataFrame):
         if not set(self.__mvs.keys()).issubset(set(data)):
             raise ValueError(
                 "The following manifest variables you configured are not present in the data set: " + ", ".join(
                     set(self.__mvs.keys()).difference(set(data))))
-        return data[list(self.__mvs.keys())]
+        data = data[list(self.__mvs.keys())]
+        if self.__metric:
+            if self.__scaled:
+                scale_values = data.stack().std() * np.sqrt((data.shape[0] - 1) / data.shape[0])
+                return util.treat(data, scale_values=scale_values)
+            else:
+                return util.treat(data, scale=False)
+        else:
+            # TODO: for ordinal / nominal nonmetric values see get_treated_data.r lines 35-40
+            return util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])

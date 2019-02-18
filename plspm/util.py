@@ -18,12 +18,16 @@
 import numpy as np, pandas as pd, math
 
 
-def treat(data: pd.DataFrame):
+def treat(data: pd.DataFrame, center:bool = True, scale:bool = True, scale_values = None):
     """Centers, scales and ranks a matrix"""
-    rows = data.shape[0]
-    rank = np.sqrt((rows - 1.0) / rows)
-    return data.subtract(data.mean()).divide(data.std()).apply(lambda x: x / rank)
-
+    if center:
+        data = data.subtract(data.mean())
+    if scale:
+        if scale_values:
+            data = data.divide(scale_values)
+        else:
+            data = data.divide(data.std())
+    return data
 
 def sort_cols(data: pd.DataFrame):
     return data.reindex(sorted(data.columns), axis=1)
@@ -37,14 +41,14 @@ def impute(data: pd.DataFrame):
     return data
 
 
-def list_to_matrix(data: pd.DataFrame):
+def list_to_matrix(data: dict):
     matrix = pd.DataFrame()
     for col in data:
         matrix = pd.concat([matrix, data[col]], axis=1, sort=False)
     return matrix.fillna(0)
 
 
-def list_to_dummy(data: pd.DataFrame):
+def list_to_dummy(data: dict):
     matrix = pd.DataFrame()
     for col in data:
         dummy = pd.DataFrame(1, index=data[col], columns=[col])

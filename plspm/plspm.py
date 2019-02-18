@@ -28,7 +28,10 @@ class Plspm:
 
         self.__config = config
         self.__outer_weights = ow.Weights(input_data, config)
-        self.__outer_weights.calculate(tolerance, iterations, scheme)
+        if (config.metric()):
+            self.__outer_weights.calculate_metric(tolerance, iterations, scheme)
+        else:
+            self.__outer_weights.calculate(tolerance, iterations, scheme)
 
     def scores(self):
         return self.__outer_weights.scores()
