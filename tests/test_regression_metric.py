@@ -80,3 +80,21 @@ def test_plspm_satisfaction():
                                                                                                 axis=1)).sort_index()
     npt.assert_allclose(expected_outer_model_factorial,
                         util.sort_cols(plspm_calc_factorial.outer_model()).sort_index())
+
+def test_plspm_russa_mode_b():
+    satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
+    config = c.Config(satisfaction_path_matrix(), scaled=False)
+    config.add_lv("IMAG", mode.B, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
+    config.add_lv("EXPE", mode.B, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
+    config.add_lv("QUAL", mode.B, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
+    config.add_lv("VAL", mode.B, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
+    config.add_lv("SAT", mode.B, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
+    config.add_lv("LOY", mode.B, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
+
+    plspm_calc = Plspm(satisfaction, config, scheme.CENTROID)
+    print(plspm_calc.inner_summary())
+    expected_inner_summary = pd.read_csv("file:tests/data/satisfaction.modeb.inner-summary.csv", index_col=0)
+    npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+    pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
+                           plspm_calc.inner_summary().loc[:, "type"].sort_index())

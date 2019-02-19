@@ -37,9 +37,9 @@ class MetricWeights:
         inner_weights = inner_weight_calculator.calculate(self.__config.path(), y)
         Z = y.dot(inner_weights)
         for lv in list(y):
-            # TODO: Mode A only!
-            thingy = (1 / self.__data.shape[0]) * Z.loc[:, [lv]].T.dot(self.__data.loc[:, self.__config.blocks()[lv]])
-            self.__weights.loc[self.__config.blocks()[lv], [lv]] = thingy.T
+            mvs = self.__config.blocks()[lv]
+            weights = self.__config.mode(lv).outer_weights_metric(self.__data, Z, lv, mvs)
+            self.__weights.loc[mvs, [lv]] = weights
         w_new = self.__weights.sum(axis=1).to_frame(name="weight")
         convergence = np.power(self.__w_old.abs() - w_new.abs(), 2).sum(axis=1).sum(axis=0)
         self.__w_old = w_new

@@ -48,7 +48,7 @@ class Plspm:
 
         self.__inner_model = im.InnerModel(config.path(), scores)
         self.__outer_model = om.OuterModel(data, scores, weights, odm, self.__inner_model.r_squared())
-        self.__inner_summary = pis.InnerSummary(config, self.__inner_model, self.__outer_model.model())
+        self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(), self.__outer_model.model())
         self.__scores = scores
 
     def scores(self):

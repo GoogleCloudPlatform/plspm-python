@@ -17,12 +17,11 @@
 
 import pandas as pd, plspm.mode as mode
 from plspm.config import Config
-from plspm.inner_model import InnerModel
 
 
 class InnerSummary:
 
-    def __init__(self, config: Config, inner_model: InnerModel, outer_model: pd.DataFrame):
+    def __init__(self, config: Config, r_squared: pd.Series, outer_model: pd.DataFrame):
         path = config.path()
         blocks = config.blocks()
         lv_type = path.sum(axis=1).astype(bool).replace(False, "Exogenous").replace(True, "Endogenous")
@@ -38,8 +37,7 @@ class InnerSummary:
                 ave_numerator = communality.sum()
                 ave_denominator = ave_numerator + (1 - communality).sum()
                 ave.loc[lv] = ave_numerator / ave_denominator
-        self.__summary = pd.concat([lv_type, inner_model.r_squared(), block_communality, mean_redundancy, ave], axis=1,
-                                   sort=True)
+        self.__summary = pd.concat([lv_type, r_squared, block_communality, mean_redundancy, ave], axis=1, sort=True)
 
     def summary(self):
         return self.__summary

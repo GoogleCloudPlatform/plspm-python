@@ -29,7 +29,7 @@ def summary(regression):
 
 class InnerModel:
 
-    def __init__(self, path: pd.DataFrame, y: pd.DataFrame):
+    def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
         self.__summaries = {}
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
         self.__path_coefficients = pd.DataFrame(0, columns=path.columns, index=path.index)
@@ -38,8 +38,8 @@ class InnerModel:
         for aux in range(0, num_endo):
             dv = endogenous[endogenous == True].index[aux]
             ivs = path.loc[dv,][path.loc[dv,] == 1].index
-            exogenous = sm.add_constant(y.loc[:, ivs])
-            regression = sm.OLS(y.loc[:, dv], exogenous).fit()
+            exogenous = sm.add_constant(scores.loc[:, ivs])
+            regression = sm.OLS(scores.loc[:, dv], exogenous).fit()
             self.__path_coefficients.loc[dv, ivs] = regression.params
             self.__r_squared.loc[dv] = regression.rsquared
             self.__summaries[dv] = summary(regression)

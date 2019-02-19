@@ -20,6 +20,9 @@ import numpy as np, pandas as pd, scipy.linalg as linalg
 
 class _ModeA:
 
+    def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list):
+        return (1 / data.shape[0]) * Z.loc[:, [lv]].T.dot(data.loc[:, mvs]).T
+
     def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float):
         weights = (mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
         Y = mv_grouped_by_lv[lv].dot(weights)
@@ -28,6 +31,10 @@ class _ModeA:
 
 
 class _ModeB:
+
+    def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list):
+        w, _, _, _ = linalg.lstsq(data.loc[:, mvs], Z.loc[:, [lv]])
+        return pd.DataFrame(w, columns=[lv], index=mvs)
 
     def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float):
         w, _, _, _ = linalg.lstsq(mv_grouped_by_lv[lv], Z.loc[:, [lv]])

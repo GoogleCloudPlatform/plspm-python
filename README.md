@@ -4,17 +4,70 @@ _Please note: This is not an officially supported Google product._
 
 **plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a partial port of the R package [plspm](https://github.com/gastonstat/plspm).
 
-Currently it will calculate modes A (for reflective relationships) and B (for formative relationships) with non-metric numerical data using centroid, factorial, and path schemes. At present only non-metric numerical data are supported, and the library does not yet calculate unidimensionality or goodness-of-fit, nor will it perform bootstrapping. Missing values are also not supported.
+Currently it will calculate modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. At present only numerical data are supported, and the library does not yet calculate unidimensionality or goodness-of-fit, nor will it perform bootstrapping. Missing values are also not supported.
 
 ## Installation
-
+s
 You can install the latest version of this package using pip:
 
 `python3 -m pip install --user plspm`
 
 It's hosted on pypi: https://pypi.org/project/plspm/
 
-## Example
+## Examples
+
+### PLS-PM with metric data
+
+Typical example with a Customer Satisfaction Model
+
+```
+#!/usr/bin/python3
+import pandas as pd, plspm.scheme as scheme, plspm.util as util, plspm.mode as mode, plspm.config as c
+from plspm.plspm import Plspm
+
+satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
+lvs = ["IMAG", "EXPE", "QUAL", "VAL", "SAT", "LOY"]
+sat_path_matrix = pd.DataFrame(
+    [[0, 0, 0, 0, 0, 0],
+     [1, 0, 0, 0, 0, 0],
+     [0, 1, 0, 0, 0, 0],
+     [0, 1, 1, 0, 0, 0],
+     [1, 1, 1, 1, 0, 0],
+     [1, 0, 0, 0, 1, 0]],
+    index=lvs, columns=lvs)
+config = c.Config(sat_path_matrix, scaled=False)
+config.add_lv("IMAG", mode.A, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
+config.add_lv("EXPE", mode.A, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
+config.add_lv("QUAL", mode.A, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
+config.add_lv("VAL", mode.A, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
+config.add_lv("SAT", mode.A, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
+config.add_lv("LOY", mode.A, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
+
+plspm_calc = Plspm(satisfaction, config, scheme.CENTROID)
+print(plspm_calc.inner_summary())
+print(plspm_calc.path_coefficients())
+```
+
+This will produce the output:
+```
+            type  r_squared  block_communality  mean_redundancy       ave
+EXPE  Endogenous   0.335194           0.616420         0.206620  0.616420
+IMAG   Exogenous   0.000000           0.582269         0.000000  0.582269
+LOY   Endogenous   0.509923           0.639052         0.325867  0.639052
+QUAL  Endogenous   0.719688           0.658572         0.473966  0.658572
+SAT   Endogenous   0.707321           0.758891         0.536779  0.758891
+VAL   Endogenous   0.590084           0.664416         0.392061  0.664416
+
+          IMAG      EXPE      QUAL       VAL       SAT  LOY
+IMAG  0.000000  0.000000  0.000000  0.000000  0.000000    0
+EXPE  0.578959  0.000000  0.000000  0.000000  0.000000    0
+QUAL  0.000000  0.848344  0.000000  0.000000  0.000000    0
+VAL   0.000000  0.105478  0.676656  0.000000  0.000000    0
+SAT   0.200724 -0.002754  0.122145  0.589331  0.000000    0
+LOY   0.275150  0.000000  0.000000  0.000000  0.495479    0
+```
+
+### PLS-PM with nonmetric data
 
 Example with the classic Russett data (original data set)
 
