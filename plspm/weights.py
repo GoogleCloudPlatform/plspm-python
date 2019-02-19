@@ -30,19 +30,21 @@ class Weights:
         self.__inner_model = None
         self.__outer_model = None
         self.__data = config.filter(data)
+        self.__correction = np.sqrt(self.__data.shape[0] / (self.__data.shape[0] - 1))
 
     def calculate_metric(self, tolerance: float, max_iterations: int, inner_weight_calculator):
         blocks = self.__config.blocks()
-        correction = np.sqrt((self.__data.shape[0] - 1) / self.__data.shape[0])
-        weight_factors = 1 / (self.__data.dot(self.__odm).std(axis=0) * correction)
+
+        weight_factors = self.__correction / self.__data.dot(self.__odm).std(axis=0)
         weights = self.__odm.dot(
             pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index))
+
         w_old = weights.sum(axis=1).to_frame(name="weight")
         iteration = 0
         while True:
             iteration += 1
             y = self.__data.dot(weights)
-            y = y.subtract(y.mean()).divide(y.std()) * correction
+            y = y.subtract(y.mean()).divide(y.std()) / self.__correction
             inner_weights = inner_weight_calculator.calculate(self.__config.path(), y)
             Z = y.dot(inner_weights)
             for lv in list(y):
@@ -56,7 +58,7 @@ class Weights:
             w_old = w_new
         if iteration > max_iterations:
             raise Exception("500 Could not converge after " + str(iteration) + " iterations")
-        weight_factors = 1 / (self.__data.dot(weights).std(axis=0) * correction)
+        weight_factors = 1 / (self.__data.dot(weights).std(axis=0) / self.__correction)
         weights = weights.dot(
             pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index))
         self.__weights = weights.sum(axis=1).to_frame(name="weight")
@@ -76,6 +78,7 @@ class Weights:
     # Z is inner estimate of LV (Y.dot(inner_weights))
     def calculate(self, tolerance: float, max_iterations: int, inner_weight_calculator):
         blocks = self.__config.blocks()
+
         mv_grouped_by_lv = {}
         y = pd.DataFrame(data=0, index=self.__data.index, columns=blocks.keys())
         for lv in blocks:
@@ -83,7 +86,6 @@ class Weights:
             sizes = mv_grouped_by_lv[lv].shape[1]
             weight = [1 / np.sqrt(sizes)] * sizes
             y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weight)
-        correction = np.sqrt(y.shape[0] / (y.shape[0] - 1))
         weights = {}
         iteration = 0
         while True:
@@ -96,20 +98,22 @@ class Weights:
                 # This loop is a numerical scaling (get_num_scale in R plspm, get_weights_nonmetric line 162)
                 for mv in list(mv_grouped_by_lv[lv]):
                     mv_values = mv_grouped_by_lv[lv].loc[:, [mv]]
-                    mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * correction / mv_values.std()
+                    mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
 
                 weights[lv], y.loc[:, [lv]] = self.__config.mode(lv).update_outer_weights(mv_grouped_by_lv, Z, lv,
-                                                                                          correction)
+                                                                                          self.__correction)
             convergence = np.power(y_old.abs() - y.abs(), 2).sum(axis=1).sum(axis=0)
             if (convergence < tolerance) or (iteration > max_iterations):
                 break
         if iteration > max_iterations:
             raise Exception("500 Could not converge after " + str(iteration) + " iterations")
         weights = util.list_to_matrix(weights)
-        weight_factors = 1 / (self.__data.dot(weights).std(axis=0, skipna=True) / correction)
+
+        weight_factors = 1 / (self.__data.dot(weights).std(axis=0, skipna=True) / self.__correction)
         weights = weights.dot(
             pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)).sum(
             axis=1).to_frame(name="weight")
+
         self.__scores = y
         self.__weights = weights
         self.__data = util.list_to_matrix(mv_grouped_by_lv)
