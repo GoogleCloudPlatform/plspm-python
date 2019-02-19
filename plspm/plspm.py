@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.weights as ow, plspm.inner_summary as pis, plspm.config as c, plspm.scheme as scheme, plspm.util as util
+import plspm.inner_summary as pis, plspm.config as c, plspm.scheme as scheme, plspm.util as util
 import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, plspm.inner_model as im
 
 
@@ -50,7 +50,6 @@ class Plspm:
         self.__outer_model = om.OuterModel(data, scores, weights, odm, self.__inner_model.r_squared())
         self.__inner_summary = pis.InnerSummary(config, self.__inner_model, self.__outer_model.model())
         self.__scores = scores
-        self.__config = config
 
     def scores(self):
         return self.__scores

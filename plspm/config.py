@@ -93,5 +93,6 @@ class Config:
             else:
                 return util.treat(data, scale=False)
         else:
+            # TODO: if metric is False, we should check and throw an exception if any mvs have None as a scale
             # TODO: for ordinal / nominal nonmetric values see get_treated_data.r lines 35-40
             return util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])

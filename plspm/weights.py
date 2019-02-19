@@ -23,8 +23,8 @@ pd.options.mode.chained_assignment = None  # default='warn'
 class MetricWeights:
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float, odm: pd.DataFrame):
         weight_factors = correction / data.dot(odm).std(axis=0)
-        weights = odm.dot(
-            pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index))
+        wf_diag = pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)
+        weights = odm.dot(wf_diag)
         self.__w_old = weights.sum(axis=1).to_frame(name="weight")
         self.__data = data
         self.__config = config
@@ -85,7 +85,7 @@ class NonmetricWeights:
             for mv in list(self.__mv_grouped_by_lv[lv]):
                 mv_values = self.__mv_grouped_by_lv[lv].loc[:, [mv]]
                 self.__mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
-                self.__weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).update_outer_weights(
+                self.__weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).outer_weights_nonmetric(
                     self.__mv_grouped_by_lv, Z, lv, self.__correction)
         return np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
 

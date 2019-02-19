@@ -18,12 +18,11 @@
 import pandas as pd, plspm.mode as mode
 from plspm.config import Config
 from plspm.inner_model import InnerModel
-from plspm.outer_model import OuterModel
 
 
 class InnerSummary:
 
-    def __init__(self, config: Config, inner_model: InnerModel, outer_model: OuterModel):
+    def __init__(self, config: Config, inner_model: InnerModel, outer_model: pd.DataFrame):
         path = config.path()
         blocks = config.blocks()
         lv_type = path.sum(axis=1).astype(bool).replace(False, "Exogenous").replace(True, "Endogenous")
