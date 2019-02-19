@@ -15,38 +15,57 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.weights as ow, plspm.inner_summary as pis, pandas as pd, plspm.config as c, plspm.scheme as scheme
+import plspm.weights as ow, plspm.inner_summary as pis, plspm.config as c, plspm.scheme as scheme, plspm.util as util
+import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, plspm.inner_model as im
 
 
 class Plspm:
 
-    def __init__(self, input_data: pd.DataFrame, config: c.Config, scheme = scheme.CENTROID, iterations: int = 100,
-                 tolerance: float = 0.000001):
+    def __init__(self, input_data: pd.DataFrame, config: c.Config, scheme=scheme.CENTROID,
+                 iterations: int = 100, tolerance: float = 0.000001):
         if iterations < 100:
             iterations = 100
         assert tolerance > 0
 
-        self.__config = config
-        self.__outer_weights = ow.Weights(input_data, config)
-        if (config.metric()):
-            self.__outer_weights.calculate_metric(tolerance, iterations, scheme)
+        data = config.filter(input_data)
+        correction = np.sqrt(data.shape[0] / (data.shape[0] - 1))
+        odm = util.list_to_dummy(config.blocks())
+
+        if config.metric():
+            calculator = w.MetricWeights(data, config, correction, odm)
         else:
-            self.__outer_weights.calculate(tolerance, iterations, scheme)
+            calculator = w.NonmetricWeights(data, config, correction)
+
+        iteration = 0
+        while True:
+            iteration += 1
+            convergence = calculator.iterate(scheme)
+            if (convergence < tolerance) or (iteration > iterations):
+                break
+        if iteration > iterations:
+            raise Exception("500 Could not converge after " + str(iteration) + " iterations")
+        data, scores, weights = calculator.calculate()
+
+        self.__inner_model = im.InnerModel(config.path(), scores)
+        self.__outer_model = om.OuterModel(data, scores, weights, odm, self.__inner_model.r_squared())
+        self.__inner_summary = pis.InnerSummary(config, self.__inner_model, self.__outer_model.model())
+        self.__scores = scores
+        self.__config = config
 
     def scores(self):
-        return self.__outer_weights.scores()
+        return self.__scores
 
     def outer_model(self):
-        return self.__outer_weights.outer_model().model()
+        return self.__outer_model.model()
 
     def inner_model(self):
-        return self.__outer_weights.inner_model().inner_model()
+        return self.__inner_model.inner_model()
 
     def path_coefficients(self):
-        return self.__outer_weights.inner_model().path_coefficients()
+        return self.__inner_model.path_coefficients()
 
     def crossloadings(self):
-        return self.__outer_weights.outer_model().crossloadings()
+        return self.__outer_model.crossloadings()
 
     def inner_summary(self):
-        return pis.InnerSummary(self.__config, self.__outer_weights.inner_model(), self.outer_model()).summary()
+        return self.__inner_summary.summary()

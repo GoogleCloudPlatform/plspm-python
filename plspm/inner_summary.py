@@ -20,6 +20,7 @@ from plspm.config import Config
 from plspm.inner_model import InnerModel
 from plspm.outer_model import OuterModel
 
+
 class InnerSummary:
 
     def __init__(self, config: Config, inner_model: InnerModel, outer_model: OuterModel):

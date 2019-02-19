@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np, pandas as pd, math
+import pandas as pd, math
 
 
 def treat(data: pd.DataFrame, center:bool = True, scale:bool = True, scale_values = None):
-    """Centers, scales and ranks a matrix"""
     if center:
         data = data.subtract(data.mean())
     if scale:
