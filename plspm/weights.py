@@ -32,6 +32,7 @@ class Weights:
         self.__data = config.filter(data)
 
     def calculate_metric(self, tolerance: float, max_iterations: int, inner_weight_calculator):
+        blocks = self.__config.blocks()
         correction = np.sqrt((self.__data.shape[0] - 1) / self.__data.shape[0])
         weight_factors = 1 / (self.__data.dot(self.__odm).std(axis=0) * correction)
         weights = self.__odm.dot(
@@ -46,9 +47,8 @@ class Weights:
             Z = y.dot(inner_weights)
             for lv in list(y):
                 # TODO: Mode A only!
-                thingy = (1 / self.__data.shape[0]) * Z.loc[:, [lv]].T.dot(
-                    self.__data.loc[:, self.__config.blocks()[lv]])
-                weights.loc[self.__config.blocks()[lv], [lv]] = thingy.T
+                thingy = (1 / self.__data.shape[0]) * Z.loc[:, [lv]].T.dot(self.__data.loc[:, blocks[lv]])
+                weights.loc[blocks[lv], [lv]] = thingy.T
             w_new = weights.sum(axis=1).to_frame(name="weight")
             convergence = np.power(w_old.abs() - w_new.abs(), 2).sum(axis=1).sum(axis=0)
             if (convergence < tolerance) or (iteration > max_iterations):
@@ -79,8 +79,8 @@ class Weights:
         rows = data.shape[0]
         rank = np.sqrt((rows - 1.0) / rows)
         data = data.apply(lambda x: x / rank)
-
         blocks = self.__config.blocks()
+
         mv_grouped_by_lv = {}
         y = pd.DataFrame(data=0, index=data.index, columns=blocks.keys())
         for lv in blocks:
@@ -111,15 +111,12 @@ class Weights:
         if iteration > max_iterations:
             raise Exception("500 Could not converge after " + str(iteration) + " iterations")
         self.__scores = y
-        self.__mv_grouped_by_lv = mv_grouped_by_lv
         self.__weights = weights
         self.__correction = correction
+        self.__data = util.list_to_matrix(mv_grouped_by_lv)
 
     def scores(self):
         return self.__scores
-
-    def mv_grouped_by_lv(self):
-        return self.__mv_grouped_by_lv
 
     def inner_model(self):
         if (self.__inner_model == None):
@@ -128,6 +125,6 @@ class Weights:
 
     def outer_model(self):
         if (self.__outer_model == None):
-            self.__outer_model = om.OuterModel(self.__scores, self.__weights, self.__mv_grouped_by_lv, self.__odm,
+            self.__outer_model = om.OuterModel(self.__data, self.__scores, self.__weights, self.__odm,
                                                self.__correction, self.inner_model().r_squared())
         return self.__outer_model

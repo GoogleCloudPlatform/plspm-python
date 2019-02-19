@@ -20,14 +20,13 @@ import plspm.util as util, pandas as pd, numpy as np
 
 class OuterModel:
 
-    def __init__(self, y: pd.DataFrame, weights: dict, mv_grouped_by_lv: dict, odm: pd.DataFrame, correction: float, r_squared):
+    def __init__(self, data: pd.DataFrame, y: pd.DataFrame, weights: dict, odm: pd.DataFrame, correction: float, r_squared):
         weights_as_matrix = util.list_to_matrix(weights)
-        quantified_mvs = util.list_to_matrix(mv_grouped_by_lv)
-        weight_factors = 1 / (quantified_mvs.dot(weights_as_matrix).std(axis=0, skipna=True) / correction)
+        weight_factors = 1 / (data.dot(weights_as_matrix).std(axis=0, skipna=True) / correction)
         weight = weights_as_matrix.dot(
             pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)).sum(
             axis=1).to_frame(name="weight")
-        self.__crossloadings = y.apply(lambda s: quantified_mvs.corrwith(s))
+        self.__crossloadings = y.apply(lambda s: data.corrwith(s))
         loading = (self.__crossloadings * odm).sum(axis=1).to_frame(name="loading")
         communality = loading.apply(lambda s: pow(s, 2))
         communality.columns = ["communality"]
