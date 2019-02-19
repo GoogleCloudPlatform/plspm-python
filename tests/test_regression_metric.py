@@ -47,14 +47,15 @@ def test_plspm_satisfaction():
     expected_scores = pd.read_csv("file:tests/data/satisfaction.scores.csv")
     npt.assert_allclose(util.sort_cols(expected_scores), util.sort_cols(plspm_calc.scores()))
 
-#    expected_inner_model = pd.read_csv("file:tests/data/russa.inner_model.csv", index_col=0)
-#    actual_inner_model = plspm_calc.inner_model()
-#    npt.assert_allclose(util.sort_cols(expected_inner_model).sort_index(),
-#                        util.sort_cols(actual_inner_model).sort_index())
-#    expected_outer_model = pd.read_csv("file:tests/data/russa.outer_model.csv", index_col=0)
-#    npt.assert_allclose(
-#        util.sort_cols(expected_outer_model.filter(["weight", "loading", "communality", "redundancy"])).sort_index(),
-#        util.sort_cols(plspm_calc.outer_model()).sort_index())
+    expected_inner_model = pd.read_csv("file:tests/data/satisfaction.inner-model.csv", index_col=0)
+    actual_inner_model = plspm_calc.inner_model()["SAT"].drop(['const'])
+    npt.assert_allclose(util.sort_cols(expected_inner_model).sort_index(),
+                        util.sort_cols(actual_inner_model).sort_index())
+    expected_outer_model = pd.read_csv("file:tests/data/satisfaction.outer-model.csv", index_col=0)
+    print(plspm_calc.outer_model())
+    npt.assert_allclose(
+        util.sort_cols(expected_outer_model.filter(["weight", "loading", "communality", "redundancy"])).sort_index(),
+        util.sort_cols(plspm_calc.outer_model()).sort_index())
 
 #    expected_crossloadings = pd.read_csv("file:tests/data/russa.crossloadings.csv", index_col=0)
 #    npt.assert_allclose(util.sort_cols(expected_crossloadings.filter(["AGRI", "IND", "POLINS"])).sort_index(),

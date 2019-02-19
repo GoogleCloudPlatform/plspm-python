@@ -75,16 +75,11 @@ class Weights:
     # Y is y matrix (outer estimates)
     # Z is inner estimate of LV (Y.dot(inner_weights))
     def calculate(self, tolerance: float, max_iterations: int, inner_weight_calculator):
-        data = util.treat(self.__data)
-        rows = data.shape[0]
-        rank = np.sqrt((rows - 1.0) / rows)
-        data = data.apply(lambda x: x / rank)
         blocks = self.__config.blocks()
-
         mv_grouped_by_lv = {}
-        y = pd.DataFrame(data=0, index=data.index, columns=blocks.keys())
+        y = pd.DataFrame(data=0, index=self.__data.index, columns=blocks.keys())
         for lv in blocks:
-            mv_grouped_by_lv[lv] = data.filter(blocks[lv])
+            mv_grouped_by_lv[lv] = self.__data.filter(blocks[lv])
             sizes = mv_grouped_by_lv[lv].shape[1]
             weight = [1 / np.sqrt(sizes)] * sizes
             y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weight)
@@ -110,9 +105,13 @@ class Weights:
                 break
         if iteration > max_iterations:
             raise Exception("500 Could not converge after " + str(iteration) + " iterations")
+        weights = util.list_to_matrix(weights)
+        weight_factors = 1 / (self.__data.dot(weights).std(axis=0, skipna=True) / correction)
+        weights = weights.dot(
+            pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)).sum(
+            axis=1).to_frame(name="weight")
         self.__scores = y
         self.__weights = weights
-        self.__correction = correction
         self.__data = util.list_to_matrix(mv_grouped_by_lv)
 
     def scores(self):
@@ -126,5 +125,5 @@ class Weights:
     def outer_model(self):
         if (self.__outer_model == None):
             self.__outer_model = om.OuterModel(self.__data, self.__scores, self.__weights, self.__odm,
-                                               self.__correction, self.inner_model().r_squared())
+                                               self.inner_model().r_squared())
         return self.__outer_model

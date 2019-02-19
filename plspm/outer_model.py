@@ -20,12 +20,7 @@ import plspm.util as util, pandas as pd, numpy as np
 
 class OuterModel:
 
-    def __init__(self, data: pd.DataFrame, y: pd.DataFrame, weights: dict, odm: pd.DataFrame, correction: float, r_squared):
-        weights_as_matrix = util.list_to_matrix(weights)
-        weight_factors = 1 / (data.dot(weights_as_matrix).std(axis=0, skipna=True) / correction)
-        weight = weights_as_matrix.dot(
-            pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)).sum(
-            axis=1).to_frame(name="weight")
+    def __init__(self, data: pd.DataFrame, y: pd.DataFrame, weights: dict, odm: pd.DataFrame, r_squared: pd.Series):
         self.__crossloadings = y.apply(lambda s: data.corrwith(s))
         loading = (self.__crossloadings * odm).sum(axis=1).to_frame(name="loading")
         communality = loading.apply(lambda s: pow(s, 2))
@@ -34,7 +29,7 @@ class OuterModel:
             axis=1).to_frame(name="communality")
         redundancy = communality * r_squared_aux
         redundancy.columns = ["redundancy"]
-        self.__outer_model = pd.concat([weight, loading, communality, redundancy], axis=1, sort=True)
+        self.__outer_model = pd.concat([weights, loading, communality, redundancy], axis=1, sort=True)
 
     def model(self):
         return self.__outer_model
