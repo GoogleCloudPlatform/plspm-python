@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas.testing as pt, pandas as pd, plspm.scheme as scheme, plspm.util as util, numpy.testing as npt, \
-    plspm.mode as mode, plspm.config as c
+    plspm.mode as mode, plspm.config as c, math
 from plspm.plspm import Plspm
 
 
@@ -61,6 +61,8 @@ def test_plspm_russa():
                             ["r_squared", "block_communality", "mean_redundancy", "ave"])).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
+
+    assert math.isclose(0.643594505232204, plspm_calc.goodness_of_fit())
 
     plspm_calc_path = Plspm(russa, config, scheme.PATH, 100, 0.0000001)
     expected_outer_model_path = util.sort_cols(

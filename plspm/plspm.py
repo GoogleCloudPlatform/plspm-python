@@ -68,3 +68,6 @@ class Plspm:
 
     def inner_summary(self):
         return self.__inner_summary.summary()
+
+    def goodness_of_fit(self):
+        return self.__inner_summary.goodness_of_fit()
