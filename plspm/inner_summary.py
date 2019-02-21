@@ -36,7 +36,7 @@ class InnerSummary:
             communality = outer_model.loc[:, "communality"].loc[blocks[lv]]
             block_communality.loc[lv] = communality.mean()
             mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[blocks[lv]].mean()
-            if (config.mode(lv) == mode.A):
+            if config.mode(lv) == mode.A:
                 ave_numerator = communality.sum()
                 ave_denominator = ave_numerator + (1 - communality).sum()
                 ave.loc[lv] = ave_numerator / ave_denominator

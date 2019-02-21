@@ -20,8 +20,8 @@ import pandas as pd, numpy as np
 
 class OuterModel:
 
-    def __init__(self, data: pd.DataFrame, y: pd.DataFrame, weights: dict, odm: pd.DataFrame, r_squared: pd.Series):
-        self.__crossloadings = y.apply(lambda s: data.corrwith(s))
+    def __init__(self, data: pd.DataFrame, scores: pd.DataFrame, weights: dict, odm: pd.DataFrame, r_squared: pd.Series):
+        self.__crossloadings = scores.apply(lambda s: data.corrwith(s))
         loading = (self.__crossloadings * odm).sum(axis=1).to_frame(name="loading")
         communality = loading.apply(lambda s: pow(s, 2))
         communality.columns = ["communality"]

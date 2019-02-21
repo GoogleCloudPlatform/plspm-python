@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util
+import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util, plspm.scale as scale
 
 
 class MV:
@@ -49,7 +49,7 @@ class Config:
         except:
             raise ValueError("path argument must be a lower triangular matrix")
         if not path.isin([0, 1]).all(axis=None):
-            raise ValueError("path matrix elements may only be in [0, 1]")
+            raise ValueError("path matrix element values may only be in [0, 1]")
         try:
             npt.assert_array_equal(path.columns.values, path.index.values)
         except:
@@ -67,6 +67,12 @@ class Config:
 
     def metric(self):
         return self.__metric
+
+    def scaled(self):
+        return self.__scaled
+
+    def scale(self, mv):
+        return self.__mvs[mv]
 
     def add_lv(self, name: str, mode, *mvs: MV):
         if name not in self.__path:
@@ -86,6 +92,8 @@ class Config:
                 "The following manifest variables you configured are not present in the data set: " + ", ".join(
                     set(self.__mvs.keys()).difference(set(data))))
         data = data[list(self.__mvs.keys())]
+        if False in data.apply(lambda x: np.issubdtype(x.dtype, np.number)).values:
+            raise ValueError("Data must only contain numeric values. Please convert any categorical data into numerical values.")
         if self.__metric:
             if self.__scaled:
                 scale_values = data.stack().std() * np.sqrt((data.shape[0] - 1) / data.shape[0])
@@ -93,6 +101,14 @@ class Config:
             else:
                 return util.treat(data, scale=False)
         else:
-            # TODO: if metric is False, we should check and throw an exception if any mvs have None as a scale
-            # TODO: for ordinal / nominal nonmetric values see get_treated_data.r lines 35-40
+            if None in self.__mvs.values():
+                raise TypeError("If you supply a scale for any MV, you must either supply a scale for all of them or specify a default scale.")
+            if set(self.__mvs.values()) == {scale.RAW}:
+                self.__scaled = False
+            if set(self.__mvs.values()) == {scale.RAW, scale.NUM}:
+                self.__scaled = True
+                self.__mvs = dict.fromkeys(self.__mvs, scale.NUM)
+            for mv in self.__mvs:
+                if mv in [scale.ORD, scale.NOM]:
+                    data.loc[:,mv] = util.rank(data.loc[:,mv])
             return util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])

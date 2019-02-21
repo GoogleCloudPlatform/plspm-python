@@ -53,3 +53,7 @@ def list_to_dummy(data: dict):
         dummy = pd.DataFrame(1, index=data[col], columns=[col])
         matrix = pd.concat([matrix, dummy], axis=1, sort=False)
     return matrix.fillna(0)
+
+
+def rank(data: pd.Series):
+    return data
