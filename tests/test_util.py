@@ -28,3 +28,10 @@ def test_impute_missing_values():
          "b": [1, 2, 3, 4, 5],
          "c": [1, 2, 3, 0, 4]})
     npt.assert_array_equal(expected_output, util.impute(input))
+
+def test_ranking():
+    data = pd.Series([0.75, -1.5, 3, -1.5, 15])
+    expected_rank = pd.Series([2, 1, 3, 1, 4])
+    print(expected_rank)
+    print(util.rank(data))
+    assert util.rank(data).equals(expected_rank)

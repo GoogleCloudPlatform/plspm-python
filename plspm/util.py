@@ -56,4 +56,9 @@ def list_to_dummy(data: dict):
 
 
 def rank(data: pd.Series):
-    return data
+    new = data.copy()
+    unique = pd.Series(data.unique())
+    ranked = unique.rank()
+    for i in range(data.size):
+        new.loc[i] = ranked.loc[unique[unique == data.iloc[i]].index[0]]
+    return new.astype(int)
