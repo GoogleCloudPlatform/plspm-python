@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np, pandas as pd, plspm.util as util, plspm.config as c
+from plspm.scheme import Scheme
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -31,14 +32,14 @@ class MetricWeights:
         self.__weights = weights
         self.__correction = correction
 
-    def iterate(self, inner_weight_calculator):
+    def iterate(self, inner_weight_calculator: Scheme):
         y = self.__data.dot(self.__weights)
         y = y.subtract(y.mean()).divide(y.std()) / self.__correction
-        inner_weights = inner_weight_calculator.calculate(self.__config.path(), y)
+        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), y)
         Z = y.dot(inner_weights)
         for lv in list(y):
             mvs = self.__config.blocks()[lv]
-            weights = self.__config.mode(lv).outer_weights_metric(self.__data, Z, lv, mvs)
+            weights = self.__config.mode(lv).value.outer_weights_metric(self.__data, Z, lv, mvs)
             self.__weights.loc[mvs, [lv]] = weights
         w_new = self.__weights.sum(axis=1).to_frame(name="weight")
         convergence = np.power(self.__w_old.abs() - w_new.abs(), 2).sum(axis=1).sum(axis=0)
@@ -75,18 +76,17 @@ class NonmetricWeights:
         self.__correction = correction
         self.__data = data
 
-    def iterate(self, inner_weight_calculator):
+    def iterate(self, inner_weight_calculator: Scheme):
         y_old = self.__y.copy()
-        inner_weights = inner_weight_calculator.calculate(self.__config.path(), self.__y)
+        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
         Z = self.__y.dot(inner_weights)
         for lv in list(self.__y):
             # If not mode B and there is more than one MV in our LV, we're going to scale.
             # This loop is a numerical scaling (get_num_scale in R plspm, get_weights_nonmetric line 162)
             for mv in list(self.__mv_grouped_by_lv[lv]):
-                mv_values = self.__mv_grouped_by_lv[lv].loc[:, [mv]]
-                self.__mv_grouped_by_lv[lv].loc[:, [mv]] = mv_values * self.__correction / mv_values.std()
-                self.__weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).outer_weights_nonmetric(
-                    self.__mv_grouped_by_lv, Z, lv, self.__correction)
+                self.__mv_grouped_by_lv[lv].loc[:, [mv]] = self.__config.scale(mv).value.scale(lv, mv, Z, self)
+            self.__weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).value.outer_weights_nonmetric(
+                self.__mv_grouped_by_lv, Z, lv, self.__correction)
         return np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
 
     def calculate(self):
@@ -95,3 +95,9 @@ class NonmetricWeights:
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weights.columns, columns=weights.columns)
         weights = weights.dot(wf_diag).sum(axis=1).to_frame(name="weight")
         return util.list_to_matrix(self.__mv_grouped_by_lv), self.__y, weights
+
+    def correction(self):
+        return self.__correction
+
+    def mv_grouped_by_lv(self, lv: str, mv: str):
+        return self.__mv_grouped_by_lv[lv].loc[:, [mv]]

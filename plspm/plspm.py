@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.inner_summary as pis, plspm.config as c, plspm.scheme as scheme, plspm.util as util
+import plspm.inner_summary as pis, plspm.config as c, plspm.util as util
 import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, plspm.inner_model as im
+from plspm.scheme import Scheme
 
 
 class Plspm:
 
-    def __init__(self, input_data: pd.DataFrame, config: c.Config, scheme=scheme.CENTROID,
+    def __init__(self, input_data: pd.DataFrame, config: c.Config, scheme: Scheme = Scheme.CENTROID,
                  iterations: int = 100, tolerance: float = 0.000001):
         if iterations < 100:
             iterations = 100

@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np, pandas as pd, scipy.linalg as linalg
+import numpy as np, pandas as pd, scipy.linalg as linalg, plspm.util as util
+from enum import Enum
 
 
 class _ModeA:
@@ -26,7 +27,7 @@ class _ModeA:
     def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float):
         weights = (mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
         Y = mv_grouped_by_lv[lv].dot(weights)
-        Y = Y * correction / Y.std()
+        Y = util.treat(Y) * correction
         return weights, Y
 
 
@@ -40,9 +41,10 @@ class _ModeB:
         w, _, _, _ = linalg.lstsq(mv_grouped_by_lv[lv], Z.loc[:, [lv]])
         weights = pd.DataFrame(w, columns=[lv], index=mv_grouped_by_lv[lv].columns.values)
         Y = mv_grouped_by_lv[lv].dot(weights)
-        Y = Y * correction / Y.std()
+        Y = util.treat(Y) * correction
         return weights, Y
 
 
-A = _ModeA()
-B = _ModeB()
+class Mode(Enum):
+    A = _ModeA()
+    B = _ModeB()

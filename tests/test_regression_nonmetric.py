@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas.testing as pt, pandas as pd, plspm.scheme as scheme, plspm.util as util, numpy.testing as npt, \
-    plspm.mode as mode, plspm.config as c, math, plspm.scale as scale
+import pandas.testing as pt, pandas as pd, plspm.util as util, numpy.testing as npt, plspm.config as c, math
 from plspm.plspm import Plspm
+from plspm.scale import Scale
+from plspm.scheme import Scheme
+from plspm.mode import Mode
 
 
 def russa_path_matrix():
@@ -31,12 +33,12 @@ def russa_path_matrix():
 
 def test_plspm_russa():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(russa_path_matrix(), default_scale=scale.NUM)
-    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
-    config.add_lv("IND", mode.A, c.MV("gnpr"), c.MV("labo"))
-    config.add_lv("POLINS", mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
+    config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
+    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
 
-    plspm_calc = Plspm(russa, config, scheme.CENTROID, 100, 0.0000001)
+    plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_scores = pd.read_csv("file:tests/data/russa.scores.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_scores), util.sort_cols(plspm_calc.scores()))
 
@@ -55,23 +57,21 @@ def test_plspm_russa():
                         util.sort_cols(plspm_calc.crossloadings()).sort_index())
 
     expected_inner_summary = pd.read_csv("file:tests/data/russa.inner_summary.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(
-        expected_inner_summary.filter(["r_squared", "block_communality", "mean_redundancy", "ave"])).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().filter(
-                            ["r_squared", "block_communality", "mean_redundancy", "ave"])).sort_index())
+    npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
     assert math.isclose(0.643594505232204, plspm_calc.goodness_of_fit())
 
-    plspm_calc_path = Plspm(russa, config, scheme.PATH, 100, 0.0000001)
+    plspm_calc_path = Plspm(russa, config, Scheme.PATH, 100, 0.0000001)
     expected_outer_model_path = util.sort_cols(
         pd.read_csv("file:tests/data/russa.outer_model_path.csv", index_col=0).filter(
             ["weight", "loading", "communality", "redundancy"])).sort_index()
     npt.assert_allclose(expected_outer_model_path,
                         util.sort_cols(plspm_calc_path.outer_model()).sort_index())
 
-    plspm_calc_factorial = Plspm(russa, config, scheme.FACTORIAL, 100, 0.0000001)
+    plspm_calc_factorial = Plspm(russa, config, Scheme.FACTORIAL, 100, 0.0000001)
     expected_outer_model_factorial = util.sort_cols(
         pd.read_csv("file:tests/data/russa.outer_model_factorial.csv", index_col=0).filter(
             ["weight", "loading", "communality", "redundancy"])).sort_index()
@@ -81,16 +81,14 @@ def test_plspm_russa():
 
 def test_plspm_russa_mode_b():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(russa_path_matrix(), default_scale=scale.NUM)
-    config.add_lv("AGRI", mode.B, c.MV("gini"), c.MV("farm"), c.MV("rent"))
-    config.add_lv("IND", mode.B, c.MV("gnpr"), c.MV("labo"))
-    config.add_lv("POLINS", mode.B, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
+    config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
+    config.add_lv("AGRI", Mode.B, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.B, c.MV("gnpr"), c.MV("labo"))
+    config.add_lv("POLINS", Mode.B, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
 
-    plspm_calc = Plspm(russa, config, scheme.CENTROID, 100, 0.0000001)
+    plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.mode_b_inner_summary.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(
-        expected_inner_summary.filter(["r_squared", "block_communality", "mean_redundancy", "ave"])).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().filter(
-                            ["r_squared", "block_communality", "mean_redundancy", "ave"])).sort_index())
+    npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())

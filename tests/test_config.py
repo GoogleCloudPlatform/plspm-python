@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, pytest, numpy.testing as npt, plspm.mode as mode, plspm.config as c, plspm.scale as scale
+import pandas as pd, pytest, numpy.testing as npt, plspm.config as c
+from plspm.scale import Scale
+from plspm.mode import Mode
+
 
 
 def config_test_path_matrix():
@@ -48,64 +51,64 @@ def test_config_rejects_bad_path_matrix():
 def test_config_rejects_path_and_lv_config_not_matching():
     config = c.Config(config_test_path_matrix())
     with pytest.raises(ValueError):
-        config.add_lv("POO", mode.A, c.MV("test"))
+        config.add_lv("POO", Mode.A, c.MV("test"))
 
 
 def test_config_returns_correct_mode_and_mvs():
     config = c.Config(config_test_path_matrix())
-    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
-    assert config.mode("AGRI") == mode.A
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    assert config.mode("AGRI") == Mode.A
     npt.assert_array_equal(config.blocks()["AGRI"], ["gini", "farm", "rent"])
 
 
 def test_config_rejects_missing_mvs():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix())
-    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("poo"))
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("poo"))
     with pytest.raises(ValueError):
         config.filter(russa)
 
 def test_config_filters_mvs():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix())
-    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     npt.assert_array_equal(list(config.filter(russa)), ["gini", "farm", "rent"])
 
 def test_data_should_only_contain_numerical_values():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     russa['gini'] = russa['gini'].astype(str)
     config = c.Config(config_test_path_matrix())
-    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     with pytest.raises(ValueError):
         config.filter(russa)
 
 def test_all_mvs_should_have_a_scale_if_data_is_nonmetric():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix())
-    config.add_lv("AGRI", mode.A, c.MV("gini", scale.NUM), c.MV("farm"), c.MV("rent"))
+    config.add_lv("AGRI", Mode.A, c.MV("gini", Scale.NUM), c.MV("farm"), c.MV("rent"))
     with pytest.raises(TypeError):
         config.filter(russa)
 
 def test_scaling_should_be_false_if_all_raw():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(config_test_path_matrix(), default_scale=scale.RAW)
-    config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config = c.Config(config_test_path_matrix(), default_scale=Scale.RAW)
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     config.filter(russa)
     assert not config.scaled()
 
 def test_scaling_should_be_true_and_all_scales_set_to_num_if_only_raw_and_num_supplied():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(config_test_path_matrix(), default_scale=scale.RAW)
-    config.add_lv("AGRI", mode.A, c.MV("gini", scale.NUM), c.MV("farm"), c.MV("rent"))
+    config = c.Config(config_test_path_matrix(), default_scale=Scale.RAW)
+    config.add_lv("AGRI", Mode.A, c.MV("gini", Scale.NUM), c.MV("farm"), c.MV("rent"))
     config.filter(russa)
     assert config.scaled()
     for mv in ["gini", "farm", "rent"]:
-        assert config.scale(mv) == scale.NUM
+        assert config.scale(mv) == Scale.NUM
 
 def test_scales_should_remain_unchanged_if_values_other_than_num_and_raw_supplied():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-    config = c.Config(config_test_path_matrix(), default_scale=scale.RAW, scaled=False)
-    config.add_lv("AGRI", mode.A, c.MV("gini", scale.NUM), c.MV("farm", scale.ORD), c.MV("rent"))
+    config = c.Config(config_test_path_matrix(), default_scale=Scale.RAW, scaled=False)
+    config.add_lv("AGRI", Mode.A, c.MV("gini", Scale.NUM), c.MV("farm", Scale.ORD), c.MV("rent"))
     config.filter(russa)
     assert not config.scaled()
-    assert config.scale("farm") == scale.ORD
+    assert config.scale("farm") == Scale.ORD

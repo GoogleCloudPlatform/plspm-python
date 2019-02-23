@@ -18,7 +18,7 @@
 import pandas as pd, math
 
 
-def treat(data: pd.DataFrame, center:bool = True, scale:bool = True, scale_values = None):
+def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_values=None):
     if center:
         data = data.subtract(data.mean())
     if scale:
@@ -27,6 +27,7 @@ def treat(data: pd.DataFrame, center:bool = True, scale:bool = True, scale_value
         else:
             data = data.divide(data.std())
     return data
+
 
 def sort_cols(data: pd.DataFrame):
     return data.reindex(sorted(data.columns), axis=1)

@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas.testing as pt, pandas as pd, plspm.scheme as scheme, plspm.util as util, numpy.testing as npt, \
-    plspm.mode as mode, plspm.config as c, math
+import pandas.testing as pt, pandas as pd, plspm.util as util, numpy.testing as npt, plspm.config as c, math
 from plspm.plspm import Plspm
+from plspm.scheme import Scheme
+from plspm.mode import Mode
 
 
 def satisfaction_path_matrix():
@@ -36,12 +37,12 @@ def satisfaction_path_matrix():
 def test_plspm_satisfaction():
     satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
     config = c.Config(satisfaction_path_matrix(), scaled=False)
-    config.add_lv("IMAG", mode.A, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
-    config.add_lv("EXPE", mode.A, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
-    config.add_lv("QUAL", mode.A, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
-    config.add_lv("VAL", mode.A, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
-    config.add_lv("SAT", mode.A, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
-    config.add_lv("LOY", mode.A, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
+    config.add_lv("IMAG", Mode.A, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
+    config.add_lv("EXPE", Mode.A, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
+    config.add_lv("QUAL", Mode.A, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
+    config.add_lv("VAL", Mode.A, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
+    config.add_lv("SAT", Mode.A, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
+    config.add_lv("LOY", Mode.A, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
 
     plspm_calc = Plspm(satisfaction, config)
     expected_scores = pd.read_csv("file:tests/data/satisfaction.scores.csv")
@@ -69,14 +70,14 @@ def test_plspm_satisfaction():
 
     assert math.isclose(0.609741624338411,plspm_calc.goodness_of_fit())
 
-    plspm_calc_path = Plspm(satisfaction, config, scheme.PATH)
+    plspm_calc_path = Plspm(satisfaction, config, Scheme.PATH)
     expected_outer_model_path = util.sort_cols(
         pd.read_csv("file:tests/data/satisfaction.outer-model-path.csv", index_col=0).drop(["block"],
                                                                                            axis=1)).sort_index()
     npt.assert_allclose(expected_outer_model_path,
                         util.sort_cols(plspm_calc_path.outer_model()).sort_index())
 
-    plspm_calc_factorial = Plspm(satisfaction, config, scheme.FACTORIAL)
+    plspm_calc_factorial = Plspm(satisfaction, config, Scheme.FACTORIAL)
     expected_outer_model_factorial = util.sort_cols(
         pd.read_csv("file:tests/data/satisfaction.outer-model-factorial.csv", index_col=0).drop(["block"],
                                                                                                 axis=1)).sort_index()
@@ -86,14 +87,14 @@ def test_plspm_satisfaction():
 def test_plspm_russa_mode_b():
     satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
     config = c.Config(satisfaction_path_matrix(), scaled=False)
-    config.add_lv("IMAG", mode.B, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
-    config.add_lv("EXPE", mode.B, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
-    config.add_lv("QUAL", mode.B, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
-    config.add_lv("VAL", mode.B, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
-    config.add_lv("SAT", mode.B, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
-    config.add_lv("LOY", mode.B, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
+    config.add_lv("IMAG", Mode.B, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
+    config.add_lv("EXPE", Mode.B, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
+    config.add_lv("QUAL", Mode.B, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
+    config.add_lv("VAL", Mode.B, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
+    config.add_lv("SAT", Mode.B, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
+    config.add_lv("LOY", Mode.B, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
 
-    plspm_calc = Plspm(satisfaction, config, scheme.CENTROID)
+    plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
     print(plspm_calc.inner_summary())
     expected_inner_summary = pd.read_csv("file:tests/data/satisfaction.modeb.inner-summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),

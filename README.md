@@ -22,8 +22,10 @@ Typical example with a Customer Satisfaction Model
 
 ```
 #!/usr/bin/python3
-import pandas as pd, plspm.scheme as scheme, plspm.util as util, plspm.mode as mode, plspm.config as c
+import pandas as pd, plspm.util as util, plspm.config as c
 from plspm.plspm import Plspm
+from plspm.scheme import Scheme
+from plspm.mode import Mode
 
 satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
 lvs = ["IMAG", "EXPE", "QUAL", "VAL", "SAT", "LOY"]
@@ -36,14 +38,14 @@ sat_path_matrix = pd.DataFrame(
      [1, 0, 0, 0, 1, 0]],
     index=lvs, columns=lvs)
 config = c.Config(sat_path_matrix, scaled=False)
-config.add_lv("IMAG", mode.A, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
-config.add_lv("EXPE", mode.A, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
-config.add_lv("QUAL", mode.A, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
-config.add_lv("VAL", mode.A, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
-config.add_lv("SAT", mode.A, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
-config.add_lv("LOY", mode.A, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
+config.add_lv("IMAG", Mode.A, c.MV("imag1"), c.MV("imag2"), c.MV("imag3"), c.MV("imag4"), c.MV("imag5"))
+config.add_lv("EXPE", Mode.A, c.MV("expe1"), c.MV("expe2"), c.MV("expe3"), c.MV("expe4"), c.MV("expe5"))
+config.add_lv("QUAL", Mode.A, c.MV("qual1"), c.MV("qual2"), c.MV("qual3"), c.MV("qual4"), c.MV("qual5"))
+config.add_lv("VAL", Mode.A, c.MV("val1"), c.MV("val2"), c.MV("val3"), c.MV("val4"))
+config.add_lv("SAT", Mode.A, c.MV("sat1"), c.MV("sat2"), c.MV("sat3"), c.MV("sat4"))
+config.add_lv("LOY", Mode.A, c.MV("loy1"), c.MV("loy2"), c.MV("loy3"), c.MV("loy4"))
 
-plspm_calc = Plspm(satisfaction, config, scheme.CENTROID)
+plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
 print(plspm_calc.inner_summary())
 print(plspm_calc.path_coefficients())
 ```
@@ -73,7 +75,11 @@ Example with the classic Russett data (original data set)
 
 ```
 #!/usr/bin/python3
-import pandas as pd, plspm.scheme as scheme, plspm.plspm as plspm, plspm.mode as mode, plspm.config as c
+import pandas as pd, plspm.config as c
+from plspm.plspm import Plspm
+from plspm.scale import Scale
+from plspm.scheme import Scheme
+from plspm.mode import Mode
 
 russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
 lvs = ["AGRI", "IND", "POLINS"]
@@ -83,12 +89,12 @@ rus_path = pd.DataFrame(
      [1, 1, 0]],
     index=lvs,
     columns=lvs)
-config = c.Config(rus_path)
-config.add_lv("AGRI", mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
-config.add_lv("IND", mode.A, c.MV("gnpr"), c.MV("labo"))
-config.add_lv("POLINS", mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
+config = c.Config(rus_path, default_scale=Scale.NUM)
+config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
+config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
 
-plspm_calc = plspm.Plspm(russa, config, scheme.CENTROID, 100, 0.0000001)
+plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
 
 print(plspm_calc.inner_summary())
 print(plspm_calc.path_coefficients())

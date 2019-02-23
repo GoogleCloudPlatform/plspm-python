@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, plspm.mode as mode, numpy as np
+import pandas as pd, numpy as np
 from plspm.config import Config
+from plspm.mode import Mode
 
 
 class InnerSummary:
@@ -36,14 +37,15 @@ class InnerSummary:
             communality = outer_model.loc[:, "communality"].loc[blocks[lv]]
             block_communality.loc[lv] = communality.mean()
             mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[blocks[lv]].mean()
-            if config.mode(lv) == mode.A:
+            if config.mode(lv) == Mode.A:
                 ave_numerator = communality.sum()
                 ave_denominator = ave_numerator + (1 - communality).sum()
                 ave.loc[lv] = ave_numerator / ave_denominator
             if len(blocks[lv]) > 1:
                 num_mvs_in_lv.append(len(blocks[lv]))
                 communality_aux.append(block_communality.loc[lv])
-        self.__summary = pd.concat([lv_type_text, r_squared, block_communality, mean_redundancy, ave], axis=1, sort=True)
+        self.__summary = pd.concat([lv_type_text, r_squared, block_communality, mean_redundancy, ave], axis=1,
+                                   sort=True)
         mean_communality = sum(x * y for x, y in zip(communality_aux, num_mvs_in_lv)) / sum(num_mvs_in_lv)
         r_squared_aux = r_squared * lv_type
         self.__goodness_of_fit = np.sqrt(mean_communality * r_squared_aux[r_squared_aux != 0].mean())

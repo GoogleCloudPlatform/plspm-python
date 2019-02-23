@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import statsmodels.formula.api as sm, numpy as np
+from enum import Enum
 
 
 class _CentroidInnerWeightCalculator:
@@ -44,6 +45,7 @@ class _PathInnerWeightCalculator:
         return E
 
 
-CENTROID = _CentroidInnerWeightCalculator()
-PATH = _PathInnerWeightCalculator()
-FACTORIAL = _FactorialInnerWeightCalculator()
+class Scheme(Enum):
+    CENTROID = _CentroidInnerWeightCalculator()
+    PATH = _PathInnerWeightCalculator()
+    FACTORIAL = _FactorialInnerWeightCalculator()

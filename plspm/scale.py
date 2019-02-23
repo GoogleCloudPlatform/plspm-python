@@ -15,30 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import plspm.util as util, pandas as pd
+from enum import Enum
+
+
 class _Numeric:
 
-    def blah(self):
-        print("wow!")
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+        return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
+
 
 class _Raw:
 
-    def blah(self):
-        print("wow!")
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+        return weights.mv_grouped_by_lv(lv, mv)
 
 
 class _Ordinal:
 
-    def blah(self):
-        print("wow!")
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+        return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
 
 
 class _Nominal:
 
-    def blah(self):
-        print("wow!")
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+        return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
 
 
-NUM = _Numeric()
-RAW = _Raw()
-ORD = _Ordinal()
-NOM = _Nominal()
+class Scale(Enum):
+    NUM = _Numeric()
+    RAW = _Raw()
+    ORD = _Ordinal()
+    NOM = _Nominal()

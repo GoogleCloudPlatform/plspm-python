@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util, plspm.scale as scale
+import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util
+from plspm.mode import Mode
+from plspm.scale import Scale
 
 
 class MV:
-    def __init__(self, name: str, scale=None):
+    def __init__(self, name: str, scale: Scale = None):
         self.__scale = scale
         self.__name = name
 
@@ -31,8 +33,7 @@ class MV:
 
 
 class Config:
-
-    def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale=None):
+    def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale: Scale = None):
         self.__modes = {}
         self.__blocks = {}
         self.__mvs = {}
@@ -71,10 +72,10 @@ class Config:
     def scaled(self):
         return self.__scaled
 
-    def scale(self, mv):
+    def scale(self, mv: str):
         return self.__mvs[mv]
 
-    def add_lv(self, name: str, mode, *mvs: MV):
+    def add_lv(self, name: str, mode: Mode, *mvs: MV):
         if name not in self.__path:
             raise ValueError("Path matrix does not contain reference to latent variable " + name)
         self.__modes[name] = mode
@@ -93,7 +94,8 @@ class Config:
                     set(self.__mvs.keys()).difference(set(data))))
         data = data[list(self.__mvs.keys())]
         if False in data.apply(lambda x: np.issubdtype(x.dtype, np.number)).values:
-            raise ValueError("Data must only contain numeric values. Please convert any categorical data into numerical values.")
+            raise ValueError(
+                "Data must only contain numeric values. Please convert any categorical data into numerical values.")
         if self.__metric:
             if self.__scaled:
                 scale_values = data.stack().std() * np.sqrt((data.shape[0] - 1) / data.shape[0])
@@ -102,13 +104,14 @@ class Config:
                 return util.treat(data, scale=False)
         else:
             if None in self.__mvs.values():
-                raise TypeError("If you supply a scale for any MV, you must either supply a scale for all of them or specify a default scale.")
-            if set(self.__mvs.values()) == {scale.RAW}:
+                raise TypeError(
+                    "If you supply a scale for any MV, you must either supply a scale for all of them or specify a default scale.")
+            if set(self.__mvs.values()) == {Scale.RAW}:
                 self.__scaled = False
-            if set(self.__mvs.values()) == {scale.RAW, scale.NUM}:
+            if set(self.__mvs.values()) == {Scale.RAW, Scale.NUM}:
                 self.__scaled = True
-                self.__mvs = dict.fromkeys(self.__mvs, scale.NUM)
+                self.__mvs = dict.fromkeys(self.__mvs, Scale.NUM)
             for mv in self.__mvs:
-                if mv in [scale.ORD, scale.NOM]:
-                    data.loc[:,mv] = util.rank(data.loc[:,mv])
+                if mv in [Scale.ORD, Scale.NOM]:
+                    data.loc[:, mv] = util.rank(data.loc[:, mv])
             return util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])
