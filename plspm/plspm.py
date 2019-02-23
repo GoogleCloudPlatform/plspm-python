@@ -44,7 +44,7 @@ class Plspm:
             if (convergence < tolerance) or (iteration > iterations):
                 break
         if iteration > iterations:
-            raise Exception("500 Could not converge after " + str(iteration) + " iterations")
+            raise Exception("Could not converge after " + str(iteration) + " iterations")
         data, scores, weights = calculator.calculate()
 
         self.__inner_model = im.InnerModel(config.path(), scores)
@@ -55,20 +55,20 @@ class Plspm:
     def scores(self):
         return self.__scores
 
-    def outer_model(self):
+    def outer_model(self) -> pd.DataFrame:
         return self.__outer_model.model()
 
-    def inner_model(self):
+    def inner_model(self) -> dict:
         return self.__inner_model.inner_model()
 
-    def path_coefficients(self):
+    def path_coefficients(self) -> pd.DataFrame:
         return self.__inner_model.path_coefficients()
 
-    def crossloadings(self):
+    def crossloadings(self) -> pd.DataFrame:
         return self.__outer_model.crossloadings()
 
-    def inner_summary(self):
+    def inner_summary(self) -> pd.DataFrame:
         return self.__inner_summary.summary()
 
-    def goodness_of_fit(self):
+    def goodness_of_fit(self) -> float:
         return self.__inner_summary.goodness_of_fit()

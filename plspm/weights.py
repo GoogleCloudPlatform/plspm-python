@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from typing import Tuple
 
 import numpy as np, pandas as pd, plspm.util as util, plspm.config as c
 from plspm.scheme import Scheme
@@ -32,7 +33,7 @@ class MetricWeights:
         self.__weights = weights
         self.__correction = correction
 
-    def iterate(self, inner_weight_calculator: Scheme):
+    def iterate(self, inner_weight_calculator: Scheme) -> float:
         y = self.__data.dot(self.__weights)
         y = y.subtract(y.mean()).divide(y.std()) / self.__correction
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), y)
@@ -46,7 +47,7 @@ class MetricWeights:
         self.__w_old = w_new
         return convergence
 
-    def calculate(self):
+    def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         weight_factors = 1 / (self.__data.dot(self.__weights).std(axis=0) / self.__correction)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)
         weights = self.__weights.dot(wf_diag)
@@ -76,7 +77,7 @@ class NonmetricWeights:
         self.__correction = correction
         self.__data = data
 
-    def iterate(self, inner_weight_calculator: Scheme):
+    def iterate(self, inner_weight_calculator: Scheme) -> float:
         y_old = self.__y.copy()
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
         Z = self.__y.dot(inner_weights)
@@ -89,15 +90,15 @@ class NonmetricWeights:
                 self.__mv_grouped_by_lv, Z, lv, self.__correction)
         return np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
 
-    def calculate(self):
+    def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         weights = util.list_to_matrix(self.__weights)
         weight_factors = 1 / (self.__data.dot(weights).std(axis=0, skipna=True) / self.__correction)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weights.columns, columns=weights.columns)
         weights = weights.dot(wf_diag).sum(axis=1).to_frame(name="weight")
         return util.list_to_matrix(self.__mv_grouped_by_lv), self.__y, weights
 
-    def correction(self):
+    def correction(self) -> float:
         return self.__correction
 
-    def mv_grouped_by_lv(self, lv: str, mv: str):
+    def mv_grouped_by_lv(self, lv: str, mv: str) -> pd.Series:
         return self.__mv_grouped_by_lv[lv].loc[:, [mv]]

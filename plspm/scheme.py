@@ -15,25 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import statsmodels.formula.api as sm, numpy as np
+import statsmodels.formula.api as sm, numpy as np, pandas as pd
 from enum import Enum
 
 
 class _CentroidInnerWeightCalculator:
 
-    def calculate(self, path, y):
+    def calculate(self, path, y) -> pd.DataFrame:
         return y.corr().mul(path + path.transpose()).apply(lambda x: np.sign(x))
 
 
 class _FactorialInnerWeightCalculator:
 
-    def calculate(self, path, y):
+    def calculate(self, path, y) -> pd.DataFrame:
         return y.cov().mul(path + path.transpose())
 
 
 class _PathInnerWeightCalculator:
 
-    def calculate(self, path, y):
+    def calculate(self, path, y) -> pd.DataFrame:
         E = path.copy()
         for column in list(E):
             follow = path.loc[column, :] == 1

@@ -21,25 +21,25 @@ from enum import Enum
 
 class _Numeric:
 
-    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
         return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
 
 
 class _Raw:
 
-    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
         return weights.mv_grouped_by_lv(lv, mv)
 
 
 class _Ordinal:
 
-    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
         return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
 
 
 class _Nominal:
 
-    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights):
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
         return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
 
 

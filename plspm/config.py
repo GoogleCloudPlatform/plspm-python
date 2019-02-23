@@ -41,20 +41,20 @@ class Config:
         self.__metric = True
         self.__default_scale = default_scale
         if not isinstance(path, pd.DataFrame):
-            raise TypeError("path argument must be a Pandas DataFrame")
+            raise TypeError("Path argument must be a Pandas DataFrame")
         path_shape = path.shape
         if path_shape[0] != path_shape[1]:
-            raise ValueError("path argument must be a square matrix")
+            raise ValueError("Path argument must be a square matrix")
         try:
             npt.assert_array_equal(path, np.tril(path))
         except:
-            raise ValueError("path argument must be a lower triangular matrix")
+            raise ValueError("Path argument must be a lower triangular matrix")
         if not path.isin([0, 1]).all(axis=None):
-            raise ValueError("path matrix element values may only be in [0, 1]")
+            raise ValueError("Path matrix element values may only be in [0, 1]")
         try:
             npt.assert_array_equal(path.columns.values, path.index.values)
         except:
-            raise ValueError("path matrix must have matching row and column index names")
+            raise ValueError("Path matrix must have matching row and column index names")
         self.__path = path
 
     def path(self):
@@ -87,7 +87,7 @@ class Config:
             if scale is not None:
                 self.__metric = False
 
-    def filter(self, data: pd.DataFrame):
+    def filter(self, data: pd.DataFrame) -> pd.DataFrame:
         if not set(self.__mvs.keys()).issubset(set(data)):
             raise ValueError(
                 "The following manifest variables you configured are not present in the data set: " + ", ".join(

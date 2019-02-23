@@ -6,6 +6,7 @@ test:
 	python3 -m pytest tests --disable-warnings --junitxml=test-results/pytest/plspm_test_report.xml
 
 package:
-	python setup.py sdist bdist_wheel # 'python3 -m twine upload dist/*' to upload
+	python setup.py sdist bdist_wheel
+	python3 -m twine upload dist/*
 
 .PHONY: init test

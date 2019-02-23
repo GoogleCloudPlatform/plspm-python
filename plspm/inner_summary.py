@@ -50,8 +50,8 @@ class InnerSummary:
         r_squared_aux = r_squared * lv_type
         self.__goodness_of_fit = np.sqrt(mean_communality * r_squared_aux[r_squared_aux != 0].mean())
 
-    def summary(self):
+    def summary(self) -> pd.DataFrame:
         return self.__summary
 
-    def goodness_of_fit(self):
+    def goodness_of_fit(self) -> float:
         return self.__goodness_of_fit

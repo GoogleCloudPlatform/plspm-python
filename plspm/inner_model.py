@@ -28,7 +28,6 @@ def summary(regression):
 
 
 class InnerModel:
-
     def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
         self.__summaries = {}
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
@@ -44,11 +43,11 @@ class InnerModel:
             self.__r_squared.loc[dv] = regression.rsquared
             self.__summaries[dv] = summary(regression)
 
-    def path_coefficients(self):
+    def path_coefficients(self) -> pd.DataFrame:
         return self.__path_coefficients
 
-    def r_squared(self):
+    def r_squared(self) -> pd.Series:
         return self.__r_squared
 
-    def inner_model(self):
+    def inner_model(self) -> dict:
         return self.__summaries

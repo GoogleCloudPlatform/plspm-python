@@ -31,8 +31,8 @@ class OuterModel:
         redundancy.columns = ["redundancy"]
         self.__outer_model = pd.concat([weights, loading, communality, redundancy], axis=1, sort=True)
 
-    def model(self):
+    def model(self) -> pd.DataFrame:
         return self.__outer_model
 
-    def crossloadings(self):
+    def crossloadings(self) -> pd.DataFrame:
         return self.__crossloadings

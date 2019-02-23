@@ -18,7 +18,7 @@
 import pandas as pd, math
 
 
-def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_values=None):
+def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_values=None) -> pd.DataFrame:
     if center:
         data = data.subtract(data.mean())
     if scale:
@@ -29,11 +29,11 @@ def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_val
     return data
 
 
-def sort_cols(data: pd.DataFrame):
+def sort_cols(data: pd.DataFrame) -> pd.DataFrame:
     return data.reindex(sorted(data.columns), axis=1)
 
 
-def impute(data: pd.DataFrame):
+def impute(data: pd.DataFrame) -> pd.DataFrame:
     for column in list(data):
         average = data[column].mean(skipna=True)
         data[column].fillna(average, inplace=True)
@@ -41,14 +41,14 @@ def impute(data: pd.DataFrame):
     return data
 
 
-def list_to_matrix(data: dict):
+def list_to_matrix(data: dict) -> pd.DataFrame:
     matrix = pd.DataFrame()
     for col in data:
         matrix = pd.concat([matrix, data[col]], axis=1, sort=False)
     return matrix.fillna(0)
 
 
-def list_to_dummy(data: dict):
+def list_to_dummy(data: dict) -> pd.DataFrame:
     matrix = pd.DataFrame()
     for col in data:
         dummy = pd.DataFrame(1, index=data[col], columns=[col])
@@ -56,7 +56,7 @@ def list_to_dummy(data: dict):
     return matrix.fillna(0)
 
 
-def rank(data: pd.Series):
+def rank(data: pd.Series) -> pd.DataFrame:
     new = data.copy()
     unique = pd.Series(data.unique())
     ranked = unique.rank()
