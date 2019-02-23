@@ -36,6 +36,7 @@ class Config:
     def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale: Scale = None):
         self.__modes = {}
         self.__blocks = {}
+        self.__dummies = {}
         self.__mvs = {}
         self.__scaled = scaled
         self.__metric = True
@@ -75,7 +76,11 @@ class Config:
     def scale(self, mv: str):
         return self.__mvs[mv]
 
+    def dummies(self, mv: str):
+        return self.__dummies[mv]
+
     def add_lv(self, name: str, mode: Mode, *mvs: MV):
+        assert mode in Mode
         if name not in self.__path:
             raise ValueError("Path matrix does not contain reference to latent variable " + name)
         self.__modes[name] = mode
@@ -111,7 +116,9 @@ class Config:
             if set(self.__mvs.values()) == {Scale.RAW, Scale.NUM}:
                 self.__scaled = True
                 self.__mvs = dict.fromkeys(self.__mvs, Scale.NUM)
+            data = util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])
             for mv in self.__mvs:
-                if mv in [Scale.ORD, Scale.NOM]:
+                if self.__mvs[mv] in [Scale.ORD, Scale.NOM]:
                     data.loc[:, mv] = util.rank(data.loc[:, mv])
-            return util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])
+                    self.__dummies[mv] = util.dummy(data.loc[:, mv])
+            return data

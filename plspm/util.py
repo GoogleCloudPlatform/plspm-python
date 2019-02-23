@@ -56,10 +56,16 @@ def list_to_dummy(data: dict) -> pd.DataFrame:
     return matrix.fillna(0)
 
 
-def rank(data: pd.Series) -> pd.DataFrame:
-    new = data.copy()
+def rank(data: pd.Series) -> pd.Series:
     unique = pd.Series(data.unique())
     ranked = unique.rank()
-    for i in range(data.size):
-        new.loc[i] = ranked.loc[unique[unique == data.iloc[i]].index[0]]
-    return new.astype(int)
+    lookup = pd.concat([unique, ranked], axis=1)
+    lookup_series = pd.Series(lookup.iloc[:, 1].values, index=lookup.iloc[:, 0])
+    return data.replace(lookup_series.to_dict()).astype(int)
+
+def dummy(data: pd.Series) -> pd.DataFrame:
+    unique = data.unique().size
+    dummy = pd.DataFrame(0, data.index, range(1, unique + 1))
+    for i in range(unique):
+        dummy.loc[data[data == i + 1].index, i + 1] = 1
+    return dummy

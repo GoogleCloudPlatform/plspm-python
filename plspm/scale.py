@@ -40,7 +40,10 @@ class _Ordinal:
 class _Nominal:
 
     def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
-        return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
+        to_quantify = pd.concat([Z.loc[:, lv], weights.mv_grouped_by_lv(lv, mv)], axis=1)
+        quantified = to_quantify.groupby(mv)[lv].mean()
+        x_quantified = weights.dummies(mv).dot(quantified).to_frame().rename(columns={0: mv})
+        return util.treat(x_quantified) * weights.correction()
 
 
 class Scale(Enum):

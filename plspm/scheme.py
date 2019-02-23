@@ -21,19 +21,19 @@ from enum import Enum
 
 class _CentroidInnerWeightCalculator:
 
-    def calculate(self, path, y) -> pd.DataFrame:
+    def calculate(self, path: pd.DataFrame, y: pd.DataFrame) -> pd.DataFrame:
         return y.corr().mul(path + path.transpose()).apply(lambda x: np.sign(x))
 
 
 class _FactorialInnerWeightCalculator:
 
-    def calculate(self, path, y) -> pd.DataFrame:
+    def calculate(self, path: pd.DataFrame, y: pd.DataFrame) -> pd.DataFrame:
         return y.cov().mul(path + path.transpose())
 
 
 class _PathInnerWeightCalculator:
 
-    def calculate(self, path, y) -> pd.DataFrame:
+    def calculate(self, path: pd.DataFrame, y: pd.DataFrame) -> pd.DataFrame:
         E = path.copy()
         for column in list(E):
             follow = path.loc[column, :] == 1

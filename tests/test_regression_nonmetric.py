@@ -92,3 +92,4 @@ def test_plspm_russa_mode_b():
                         util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
+

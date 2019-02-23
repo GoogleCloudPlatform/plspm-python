@@ -63,10 +63,12 @@ class MetricWeights:
 
 class NonmetricWeights:
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
+        self.__mv_grouped_by_lv_initial = {}
         mv_grouped_by_lv = {}
         y = pd.DataFrame(data=0, index=data.index, columns=config.blocks().keys())
         for lv in config.blocks():
             mv_grouped_by_lv[lv] = data.filter(config.blocks()[lv])
+            self.__mv_grouped_by_lv_initial[lv] = mv_grouped_by_lv[lv].copy()
             sizes = mv_grouped_by_lv[lv].shape[1]
             weight = [1 / np.sqrt(sizes)] * sizes
             y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weight)
@@ -101,4 +103,7 @@ class NonmetricWeights:
         return self.__correction
 
     def mv_grouped_by_lv(self, lv: str, mv: str) -> pd.Series:
-        return self.__mv_grouped_by_lv[lv].loc[:, [mv]]
+        return self.__mv_grouped_by_lv_initial[lv].loc[:, [mv]]
+
+    def dummies(self, mv: str) -> pd.DataFrame:
+        return self.__config.dummies(mv)

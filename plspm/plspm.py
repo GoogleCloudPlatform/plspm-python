@@ -27,6 +27,7 @@ class Plspm:
         if iterations < 100:
             iterations = 100
         assert tolerance > 0
+        assert scheme in Scheme
 
         data = config.filter(input_data)
         correction = np.sqrt(data.shape[0] / (data.shape[0] - 1))
