@@ -4,7 +4,7 @@ _Please note: This is not an officially supported Google product._
 
 **plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a partial port of the R package [plspm](https://github.com/gastonstat/plspm).
 
-Currently it will calculate modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. At present only numerical data are supported, and the library does not yet calculate unidimensionality, nor will it perform bootstrapping. Missing values in  non-metric data are also not handled.
+Currently it will calculate modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. At present the library does not yet calculate unidimensionality, nor will it perform bootstrapping. Missing values in  non-metric data are also not handled.
 
 ## Installation
 s
@@ -111,6 +111,35 @@ POLINS  Endogenous   0.592258           0.565175         0.334729  0.565175
 AGRI    0.000000  0.000000       0
 IND     0.000000  0.000000       0
 POLINS  0.225639  0.671457       0
+```
+
+#### Example 2
+
+PLS-PM using data set `russa`, and different scaling
+
+```
+#!/usr/bin/python3
+import pandas as pd, plspm.config as c, plspm.util as util
+from plspm.plspm import Plspm
+from plspm.scale import Scale
+from plspm.scheme import Scheme
+from plspm.mode import Mode
+
+def russa_path_matrix():
+    lvs = ["AGRI", "IND", "POLINS"]
+    return pd.DataFrame(
+        [[0, 0, 0],
+         [0, 0, 0],
+         [1, 1, 0]],
+        index=lvs, columns=lvs)
+
+russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
+config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
+config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORD), c.MV("labo", Scale.ORD))
+config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo", Scale.NOM), c.MV("inst"))
+
+plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
 ```
 
 ## Maintainers

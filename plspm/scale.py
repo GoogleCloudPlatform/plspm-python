@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.util as util, pandas as pd
+import plspm.util as util, pandas as pd, numpy as np
 from enum import Enum
 
 
@@ -33,9 +33,36 @@ class _Raw:
 
 class _Ordinal:
 
-    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
-        return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
+    def _quantify(self, dummies, Z):
+        scaling = pd.Series(0, dummies.columns)
+        for col in dummies:
+            scaling.loc[col] = (dummies.loc[:,col] * Z).sum()
+            scaling.loc[col] = scaling.loc[col] / dummies.loc[:,col].sum()
+        return scaling
 
+    def _ordinalize(self, scaling: pd.Series, dummies: pd.DataFrame, Z: pd.DataFrame, sign: int):
+        # This is abysmally slow
+        while True:
+            ncols = len(dummies.columns)
+            for n in range(len(dummies.columns) - 1):
+                if np.sign(scaling.iloc[n] - scaling.iloc[n+1]) == sign:
+                    dummies.iloc[:,n+1] = dummies.iloc[:,n] + dummies.iloc[:,n+1]
+                    dummies = dummies.drop(dummies.columns[n], axis=1)
+                    scaling = self._quantify(dummies, Z)
+                    break
+            if len(dummies.columns) == 1 or len(dummies.columns) == ncols:
+                break
+        x_new = dummies.dot(scaling)
+        return x_new, x_new.var()
+
+    def scale(self, lv: str, mv: str, Z: pd.DataFrame, weights) -> pd.DataFrame:
+        to_quantify = pd.concat([Z.loc[:, lv], weights.mv_grouped_by_lv(lv, mv)], axis=1)
+        quantified = to_quantify.groupby(mv)[lv].mean()
+        x_quant_incr, var_incr = self._ordinalize(quantified.copy(), weights.dummies(mv).copy(), Z.loc[:, lv], 1)
+        x_quant_decr, var_decr = self._ordinalize(quantified.copy(), weights.dummies(mv).copy(), Z.loc[:, lv], -1)
+        x_quantified = -x_quant_decr if var_incr < var_decr else x_quant_incr
+        scaled = util.treat(x_quantified.to_frame().rename(columns={0: mv})) * weights.correction()
+        return scaled
 
 class _Nominal:
 

@@ -84,8 +84,8 @@ class NonmetricWeights:
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
         Z = self.__y.dot(inner_weights)
         for lv in list(self.__y):
-            # If not mode B and there is more than one MV in our LV, we're going to scale.
-            # This loop is a numerical scaling (get_num_scale in R plspm, get_weights_nonmetric line 162)
+            # TODO: If Mode B and there is more than one MV in our LV, we're going to scale differently.
+            # (see get_weights_nonmetric line 114-117)
             for mv in list(self.__mv_grouped_by_lv[lv]):
                 self.__mv_grouped_by_lv[lv].loc[:, [mv]] = self.__config.scale(mv).value.scale(lv, mv, Z, self)
             self.__weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).value.outer_weights_nonmetric(
@@ -94,10 +94,11 @@ class NonmetricWeights:
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         weights = util.list_to_matrix(self.__weights)
-        weight_factors = 1 / (self.__data.dot(weights).std(axis=0, skipna=True) / self.__correction)
+        data_new = util.list_to_matrix(self.__mv_grouped_by_lv)
+        weight_factors = 1 / (data_new.dot(weights).std(axis=0, skipna=True) / self.__correction)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weights.columns, columns=weights.columns)
         weights = weights.dot(wf_diag).sum(axis=1).to_frame(name="weight")
-        return util.list_to_matrix(self.__mv_grouped_by_lv), self.__y, weights
+        return data_new, self.__y, weights
 
     def correction(self) -> float:
         return self.__correction
