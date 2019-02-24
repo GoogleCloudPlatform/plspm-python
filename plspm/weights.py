@@ -16,8 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple
 
-import numpy as np, pandas as pd, plspm.util as util, plspm.config as c
+import numpy as np, pandas as pd, plspm.util as util, plspm.config as c, statsmodels.api as sm
 from plspm.scheme import Scheme
+from plspm.mode import Mode
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -80,16 +81,16 @@ class NonmetricWeights:
         self.__data = data
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
+        self.__betas = {}
         y_old = self.__y.copy()
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
         Z = self.__y.dot(inner_weights)
         for lv in list(self.__y):
-            # TODO: If Mode B and there is more than one MV in our LV, we're going to scale differently.
-            # (see get_weights_nonmetric line 114-117)
             for mv in list(self.__mv_grouped_by_lv[lv]):
-                self.__mv_grouped_by_lv[lv].loc[:, [mv]] = self.__config.scale(mv).value.scale(lv, mv, Z, self)
-            self.__weights[lv], self.__y.loc[:, [lv]] = self.__config.mode(lv).value.outer_weights_nonmetric(
-                self.__mv_grouped_by_lv, Z, lv, self.__correction)
+                self.__mv_grouped_by_lv[lv].loc[:, [mv]] = \
+                    self.__config.scale(mv).value.scale(lv, mv, Z.loc[:, lv], self)
+            self.__weights[lv], self.__y.loc[:, [lv]] = \
+                self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv, Z, lv, self.__correction)
         return np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -99,6 +100,17 @@ class NonmetricWeights:
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weights.columns, columns=weights.columns)
         weights = weights.dot(wf_diag).sum(axis=1).to_frame(name="weight")
         return data_new, self.__y, weights
+
+    def get_Z_for_mode_b(self, lv, mv, z_by_lv):
+        if self.__config.mode(lv) != Mode.B or len(self.__config.blocks()[lv]) == 1:
+            return z_by_lv
+        if lv not in self.__betas:
+            exogenous = sm.add_constant(self.__mv_grouped_by_lv[lv])
+            regression = sm.OLS(z_by_lv, exogenous).fit()
+            self.__betas[lv] = regression.params.drop(index="const")
+        correction = 1 / self.__betas[lv][mv]
+        z_by_lv = correction * (z_by_lv - self.__mv_grouped_by_lv[lv].drop(mv, axis=1).dot(self.__betas[lv].drop(mv)))
+        return z_by_lv.rename(lv)
 
     def correction(self) -> float:
         return self.__correction
