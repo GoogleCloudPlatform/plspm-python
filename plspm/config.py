@@ -92,6 +92,11 @@ class Config:
             if scale is not None:
                 self.__metric = False
 
+    def add_lv_with_columns_named(self, col_name_starts_with: str, data: pd.DataFrame, lv_name: str, mode: Mode, default_scale: Scale = None):
+        names = filter(lambda x: x.startswith(col_name_starts_with), list(data))
+        mvs = list(map(lambda mv: MV(mv, default_scale), names))
+        self.add_lv(lv_name, mode, *mvs)
+
     def filter(self, data: pd.DataFrame) -> pd.DataFrame:
         if not set(self.__mvs.keys()).issubset(set(data)):
             raise ValueError(
