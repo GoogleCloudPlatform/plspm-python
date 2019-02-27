@@ -18,7 +18,6 @@
 import plspm.util as util, pandas as pd, numpy as np
 from enum import Enum
 
-
 class _Numeric:
 
     def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
@@ -33,36 +32,35 @@ class _Raw:
 
 class _Ordinal:
 
-    def _quantify(self, dummies: pd.DataFrame, z_by_lv: pd.Series):
-        scaling = pd.Series(0, dummies.columns)
-        for col in dummies:
-            scaling.loc[col] = (dummies.loc[:,col] * z_by_lv).sum()
-            scaling.loc[col] = scaling.loc[col] / dummies.loc[:,col].sum()
+    def _quantify(self, dummies, z_by_lv):
+        scaling = [0] * (len(dummies[0]))
+        for n in range(len(dummies[0])):
+            scaling[n] = np.sum(np.multiply(dummies[:,n], z_by_lv))
+            scaling[n] = scaling[n] / np.sum(dummies[:,n])
         return scaling
 
-    def _ordinalize(self, scaling: pd.Series, dummies: pd.DataFrame, z_by_lv: pd.Series, sign: int):
-        # This is abysmally slow
+    def _ordinalize(self, scaling, dummies, z_by_lv, sign: int):
         while True:
-            ncols = len(dummies.columns)
-            for n in range(len(dummies.columns) - 1):
-                if np.sign(scaling.iloc[n] - scaling.iloc[n+1]) == sign:
-                    dummies.iloc[:,n+1] = dummies.iloc[:,n] + dummies.iloc[:,n+1]
-                    dummies = dummies.drop(dummies.columns[n], axis=1)
+            ncols = len(dummies[0])
+            for n in range(len(dummies[0]) - 1):
+                if np.sign(scaling[n] - scaling[n+1]) == sign:
+                    dummies[:,n+1] = dummies[:,n] + dummies[:,n+1]
+                    dummies = np.delete(dummies, n, axis=1)
                     scaling = self._quantify(dummies, z_by_lv)
                     break
-            if len(dummies.columns) == 1 or len(dummies.columns) == ncols:
+            if len(dummies[0]) == 1 or len(dummies[0]) == ncols:
                 break
-        x_new = dummies.dot(scaling)
-        return x_new, x_new.var()
+        x_new = np.dot(dummies, scaling)
+        return x_new, np.var(x_new)
 
     def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
         z_by_lv = weights.get_Z_for_mode_b(lv, mv, z_by_lv)
         to_quantify = pd.concat([z_by_lv, weights.mv_grouped_by_lv(lv, mv)], axis=1)
         quantified = to_quantify.groupby(mv)[lv].mean()
-        x_quant_incr, var_incr = self._ordinalize(quantified.copy(), weights.dummies(mv).copy(), z_by_lv, 1)
-        x_quant_decr, var_decr = self._ordinalize(quantified.copy(), weights.dummies(mv).copy(), z_by_lv, -1)
+        x_quant_incr, var_incr = self._ordinalize(quantified.values, weights.dummies(mv).values.copy(), z_by_lv.values, 1)
+        x_quant_decr, var_decr = self._ordinalize(quantified.values, weights.dummies(mv).values.copy(), z_by_lv.values, -1)
         x_quantified = -x_quant_decr if var_incr < var_decr else x_quant_incr
-        scaled = util.treat(x_quantified.to_frame().rename(columns={0: mv})) * weights.correction()
+        scaled = util.treat(pd.DataFrame(x_quantified, columns=[mv], index=z_by_lv.index)) * weights.correction()
         return scaled
 
 class _Nominal:
