@@ -61,8 +61,17 @@ class Config:
     def path(self):
         return self.__path
 
-    def blocks(self):
-        return self.__blocks
+    def odm(self):
+        return util.list_to_dummy(self.__blocks)
+
+    def mv_index(self, lv, mv):
+        return self.__blocks[lv].index(mv)
+
+    def blocks(self, lv):
+        return self.__blocks[lv]
+
+    def lvs(self):
+        return self.__blocks.keys()
 
     def mode(self, lv: str):
         return self.__modes[lv]

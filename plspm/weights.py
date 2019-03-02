@@ -19,6 +19,7 @@ from typing import Tuple
 import numpy as np, pandas as pd, plspm.util as util, plspm.config as c, statsmodels.api as sm
 from plspm.scheme import Scheme
 from plspm.mode import Mode
+from plspm.scale import Scale
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -35,12 +36,13 @@ class MetricWeights:
         self.__correction = correction
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
+        lvs = self.__config.lvs()
         y = self.__data.dot(self.__weights)
         y = y.subtract(y.mean()).divide(y.std()) / self.__correction
-        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), y)
+        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), y.values), index=lvs, columns=lvs)
         Z = y.dot(inner_weights)
-        for lv in list(y):
-            mvs = self.__config.blocks()[lv]
+        for lv in list(lvs):
+            mvs = self.__config.blocks(lv)
             weights = self.__config.mode(lv).value.outer_weights_metric(self.__data, Z, lv, mvs)
             self.__weights.loc[mvs, [lv]] = weights
         w_new = self.__weights.sum(axis=1).to_frame(name="weight")
@@ -65,58 +67,68 @@ class MetricWeights:
 class NonmetricWeights:
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
         self.__mv_grouped_by_lv_initial = {}
+        self.__mvs = []
         mv_grouped_by_lv = {}
-        y = pd.DataFrame(data=0, index=data.index, columns=config.blocks().keys())
-        for lv in config.blocks():
-            mv_grouped_by_lv[lv] = data.filter(config.blocks()[lv])
+        y = np.zeros((len(data.index), len(config.lvs())), dtype=np.float64)
+        for i, lv in enumerate(config.lvs()):
+            mvs = config.blocks(lv)
+            self.__mvs.extend(mvs)
+            mv_grouped_by_lv[lv] = data.filter(config.blocks(lv)).values.astype(np.float64)
             self.__mv_grouped_by_lv_initial[lv] = mv_grouped_by_lv[lv].copy()
             sizes = mv_grouped_by_lv[lv].shape[1]
             weight = [1 / np.sqrt(sizes)] * sizes
-            y.loc[:, [lv]] = mv_grouped_by_lv[lv].dot(weight)
+            y[:, i] = np.dot(mv_grouped_by_lv[lv], weight)
         self.__weights = {}
         self.__y = y
         self.__mv_grouped_by_lv = mv_grouped_by_lv
         self.__config = config
         self.__correction = correction
-        self.__data = data
+        self.__index = data.index
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
         self.__betas = {}
         y_old = self.__y.copy()
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
-        Z = self.__y.dot(inner_weights)
-        for lv in list(self.__y):
-            for mv in list(self.__mv_grouped_by_lv[lv]):
-                self.__mv_grouped_by_lv[lv].loc[:, [mv]] = \
-                    self.__config.scale(mv).value.scale(lv, mv, Z.loc[:, lv], self)
-            self.__weights[lv], self.__y.loc[:, [lv]] = \
-                self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv, Z, lv, self.__correction)
-        return np.power(y_old.abs() - self.__y.abs(), 2).sum(axis=1).sum(axis=0)
+        Z = np.dot(self.__y, inner_weights)
+        for i, lv in enumerate(list(self.__config.lvs())):
+            for j, mv in enumerate(list(self.__config.blocks(lv))):
+                self.__mv_grouped_by_lv[lv][:, j] = \
+                    self.__config.scale(mv).value.scale(lv, mv, Z[:, i], self)
+            self.__weights[lv], self.__y[:, i] = \
+                self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv, Z[:, i], lv,
+                                                                     self.__correction)
+        return np.power(np.subtract(np.abs(y_old), np.abs(self.__y)), 2).sum(axis=1).sum(axis=0)
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        weights = util.list_to_matrix(self.__weights)
-        data_new = util.list_to_matrix(self.__mv_grouped_by_lv)
+        lvs = self.__config.lvs()
+        weights = pd.DataFrame(0, index=self.__mvs, columns=lvs)
+        data_new = pd.DataFrame(0, index=self.__index, columns=self.__mvs)
+        for lv in self.__config.lvs():
+            mvs = self.__config.blocks(lv)
+            weights.loc[mvs, [lv]] = self.__weights[lv]
+            data_new.loc[:, mvs] = self.__mv_grouped_by_lv[lv]
         weight_factors = 1 / (data_new.dot(weights).std(axis=0, skipna=True) / self.__correction)
-        wf_diag = pd.DataFrame(np.diag(weight_factors), index=weights.columns, columns=weights.columns)
+        wf_diag = pd.DataFrame(np.diag(weight_factors), index=lvs, columns=lvs)
         weights = weights.dot(wf_diag).sum(axis=1).to_frame(name="weight")
-        return data_new, self.__y, weights
+        return data_new, pd.DataFrame(self.__y, index=self.__index, columns=lvs), weights
 
     def get_Z_for_mode_b(self, lv, mv, z_by_lv):
-        if self.__config.mode(lv) != Mode.B or len(self.__config.blocks()[lv]) == 1:
+        mv_index = self.__config.mv_index(lv, mv)
+        if self.__config.mode(lv) != Mode.B or len(self.__config.blocks(lv)) == 1:
             return z_by_lv
         if lv not in self.__betas:
             exogenous = sm.add_constant(self.__mv_grouped_by_lv[lv])
             regression = sm.OLS(z_by_lv, exogenous).fit()
-            self.__betas[lv] = regression.params.drop(index="const")
-        correction = 1 / self.__betas[lv][mv]
-        z_by_lv = correction * (z_by_lv - self.__mv_grouped_by_lv[lv].drop(mv, axis=1).dot(self.__betas[lv].drop(mv)))
-        return z_by_lv.rename(lv)
+            self.__betas[lv] = regression.params[1:]
+        correction = 1 / self.__betas[lv][mv_index]
+        return correction * (z_by_lv - np.delete(self.__mv_grouped_by_lv[lv], mv_index, axis=1).dot(
+            np.delete(self.__betas[lv], mv_index)))
 
     def correction(self) -> float:
         return self.__correction
 
-    def mv_grouped_by_lv(self, lv: str, mv: str) -> pd.Series:
-        return self.__mv_grouped_by_lv_initial[lv].loc[:, [mv]]
+    def mv_grouped_by_lv(self, lv: str, mv: str):
+        return self.__mv_grouped_by_lv_initial[lv][:, self.__config.mv_index(lv, mv)]
 
     def dummies(self, mv: str) -> pd.DataFrame:
         return self.__config.dummies(mv)

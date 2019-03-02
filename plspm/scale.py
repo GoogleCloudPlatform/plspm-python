@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.util as util, pandas as pd, numpy as np
+import plspm.util as util, pandas as pd, numpy as np, time
 from enum import Enum
 
 class _Numeric:
 
     def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
-        return util.treat(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
+        return util.treat_numpy(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
 
 
 class _Raw:
@@ -35,7 +35,7 @@ class _Ordinal:
     def _quantify(self, dummies, z_by_lv):
         scaling = [0] * (len(dummies[0]))
         for n in range(len(dummies[0])):
-            scaling[n] = np.sum(np.multiply(dummies[:,n], z_by_lv))
+            scaling[n] = np.sum(dummies[:,n] * z_by_lv)
             scaling[n] = scaling[n] / np.sum(dummies[:,n])
         return scaling
 
@@ -53,24 +53,24 @@ class _Ordinal:
         x_new = np.dot(dummies, scaling)
         return x_new, np.var(x_new)
 
-    def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
+    def scale(self, lv: str, mv: str, z_by_lv: np.ndarray, weights) -> pd.DataFrame:
         z_by_lv = weights.get_Z_for_mode_b(lv, mv, z_by_lv)
-        to_quantify = pd.concat([z_by_lv, weights.mv_grouped_by_lv(lv, mv)], axis=1)
-        quantified = to_quantify.groupby(mv)[lv].mean()
-        x_quant_incr, var_incr = self._ordinalize(quantified.values, weights.dummies(mv).values.copy(), z_by_lv.values, 1)
-        x_quant_decr, var_decr = self._ordinalize(quantified.values, weights.dummies(mv).values.copy(), z_by_lv.values, -1)
+        to_quantify = np.array([weights.mv_grouped_by_lv(lv, mv), z_by_lv])
+        quantified = util.groupby_mean(to_quantify)
+        x_quant_incr, var_incr = self._ordinalize(quantified[1,:], weights.dummies(mv).values.copy(), z_by_lv, 1)
+        x_quant_decr, var_decr = self._ordinalize(quantified[1,:], weights.dummies(mv).values.copy(), z_by_lv, -1)
         x_quantified = -x_quant_decr if var_incr < var_decr else x_quant_incr
-        scaled = util.treat(pd.DataFrame(x_quantified, columns=[mv], index=z_by_lv.index)) * weights.correction()
+        scaled = util.treat_numpy(x_quantified) * weights.correction()
         return scaled
 
 class _Nominal:
 
-    def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
+    def scale(self, lv: str, mv: str, z_by_lv: np.ndarray, weights) -> pd.DataFrame:
         z_by_lv = weights.get_Z_for_mode_b(lv, mv, z_by_lv)
-        to_quantify = pd.concat([z_by_lv, weights.mv_grouped_by_lv(lv, mv)], axis=1)
-        quantified = to_quantify.groupby(mv)[lv].mean()
-        x_quantified = weights.dummies(mv).dot(quantified).to_frame().rename(columns={0: mv})
-        return util.treat(x_quantified) * weights.correction()
+        to_quantify = np.array([weights.mv_grouped_by_lv(lv, mv), z_by_lv])
+        quantified = util.groupby_mean(to_quantify)
+        x_quantified = weights.dummies(mv).dot(quantified[1,:])
+        return util.treat_numpy(x_quantified) * weights.correction()
 
 
 class Scale(Enum):

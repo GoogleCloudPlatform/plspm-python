@@ -31,7 +31,7 @@ class Plspm:
 
         data = config.filter(input_data)
         correction = np.sqrt(data.shape[0] / (data.shape[0] - 1))
-        odm = util.list_to_dummy(config.blocks())
+        odm = config.odm()
 
         if config.metric():
             calculator = w.MetricWeights(data, config, correction, odm)

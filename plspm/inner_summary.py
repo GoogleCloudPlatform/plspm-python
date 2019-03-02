@@ -24,7 +24,6 @@ class InnerSummary:
 
     def __init__(self, config: Config, r_squared: pd.Series, outer_model: pd.DataFrame):
         path = config.path()
-        blocks = config.blocks()
         lv_type = path.sum(axis=1).astype(bool)
         lv_type.name = "type"
         lv_type_text = lv_type.replace(False, "Exogenous").replace(True, "Endogenous")
@@ -33,16 +32,16 @@ class InnerSummary:
         ave = pd.Series(0, index=path.index, name="ave")
         communality_aux = []
         num_mvs_in_lv = []
-        for lv in blocks:
-            communality = outer_model.loc[:, "communality"].loc[blocks[lv]]
+        for lv in config.lvs():
+            communality = outer_model.loc[:, "communality"].loc[config.blocks(lv)]
             block_communality.loc[lv] = communality.mean()
-            mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[blocks[lv]].mean()
+            mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[config.blocks(lv)].mean()
             if config.mode(lv) == Mode.A:
                 ave_numerator = communality.sum()
                 ave_denominator = ave_numerator + (1 - communality).sum()
                 ave.loc[lv] = ave_numerator / ave_denominator
-            if len(blocks[lv]) > 1:
-                num_mvs_in_lv.append(len(blocks[lv]))
+            if len(config.blocks(lv)) > 1:
+                num_mvs_in_lv.append(len(config.blocks(lv)))
                 communality_aux.append(block_communality.loc[lv])
         self.__summary = pd.concat([lv_type_text, r_squared, block_communality, mean_redundancy, ave], axis=1,
                                    sort=True)

@@ -25,11 +25,11 @@ class _ModeA:
     def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list) -> pd.DataFrame:
         return (1 / data.shape[0]) * Z.loc[:, [lv]].T.dot(data.loc[:, mvs]).T
 
-    def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float) -> Tuple[
-        pd.DataFrame, pd.DataFrame]:
-        weights = (mv_grouped_by_lv[lv].transpose().dot(Z.loc[:, [lv]])) / np.power(Z.loc[:, [lv]], 2).sum()
-        Y = mv_grouped_by_lv[lv].dot(weights)
-        Y = util.treat(Y) * correction
+    def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: np.ndarray, lv: str, correction: float) -> \
+            Tuple[np.ndarray, np.ndarray]:
+        weights = np.dot(np.transpose(mv_grouped_by_lv[lv]), Z) / np.power(Z, 2).sum()
+        Y = np.dot(mv_grouped_by_lv[lv], weights)
+        Y = util.treat_numpy(Y) * correction
         return weights, Y
 
 
@@ -39,12 +39,11 @@ class _ModeB:
         w, _, _, _ = linalg.lstsq(data.loc[:, mvs], Z.loc[:, [lv]])
         return pd.DataFrame(w, columns=[lv], index=mvs)
 
-    def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float) -> Tuple[
-        pd.DataFrame, pd.DataFrame]:
-        w, _, _, _ = linalg.lstsq(mv_grouped_by_lv[lv], Z.loc[:, [lv]])
-        weights = pd.DataFrame(w, columns=[lv], index=mv_grouped_by_lv[lv].columns.values)
-        Y = mv_grouped_by_lv[lv].dot(weights)
-        Y = util.treat(Y) * correction
+    def outer_weights_nonmetric(self, mv_grouped_by_lv: list, Z: pd.DataFrame, lv: str, correction: float) -> \
+            Tuple[np.ndarray, np.ndarray]:
+        weights, _, _, _ = linalg.lstsq(mv_grouped_by_lv[lv], Z)
+        Y = np.dot(mv_grouped_by_lv[lv], weights)
+        Y = util.treat_numpy(Y) * correction
         return weights, Y
 
 

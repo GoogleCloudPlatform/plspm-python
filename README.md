@@ -7,7 +7,6 @@ _Please note: This is not an officially supported Google product._
 Currently it will calculate modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. At present the library does not yet calculate unidimensionality, nor will it perform bootstrapping. Missing values in  non-metric data are also not handled.
 
 ## Installation
-s
 You can install the latest version of this package using pip:
 
 `python3 -m pip install --user plspm`
