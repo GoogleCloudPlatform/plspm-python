@@ -74,13 +74,13 @@ def groupby_mean(data: np.ndarray) -> np.ndarray:
     values = {}
     reduced = 0
     for i in range(data.shape[1]):
-        index = data[0,i]
+        index = data[0, i]
         if not index in values:
             values[index] = []
             reduced += 1
-        values[index].append(data[1,i])
+        values[index].append(data[1, i])
     means = np.zeros((2, reduced), dtype=np.float64)
     for i, index in enumerate(sorted(values.keys())):
-        means[0 , i] = index
-        means[1 , i] = np.mean(values[index])
+        means[0, i] = index
+        means[1, i] = np.mean(values[index])
     return means

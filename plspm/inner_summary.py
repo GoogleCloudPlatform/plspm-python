@@ -33,15 +33,15 @@ class InnerSummary:
         communality_aux = []
         num_mvs_in_lv = []
         for lv in config.lvs():
-            communality = outer_model.loc[:, "communality"].loc[config.blocks(lv)]
+            communality = outer_model.loc[:, "communality"].loc[config.mvs(lv)]
             block_communality.loc[lv] = communality.mean()
-            mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[config.blocks(lv)].mean()
+            mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[config.mvs(lv)].mean()
             if config.mode(lv) == Mode.A:
                 ave_numerator = communality.sum()
                 ave_denominator = ave_numerator + (1 - communality).sum()
                 ave.loc[lv] = ave_numerator / ave_denominator
-            if len(config.blocks(lv)) > 1:
-                num_mvs_in_lv.append(len(config.blocks(lv)))
+            if len(config.mvs(lv)) > 1:
+                num_mvs_in_lv.append(len(config.mvs(lv)))
                 communality_aux.append(block_communality.loc[lv])
         self.__summary = pd.concat([lv_type_text, r_squared, block_communality, mean_redundancy, ave], axis=1,
                                    sort=True)

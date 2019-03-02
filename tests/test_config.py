@@ -58,7 +58,7 @@ def test_config_returns_correct_mode_and_mvs():
     config = c.Config(config_test_path_matrix())
     config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     assert config.mode("AGRI") == Mode.A
-    npt.assert_array_equal(config.blocks("AGRI"), ["gini", "farm", "rent"])
+    npt.assert_array_equal(config.mvs("AGRI"), ["gini", "farm", "rent"])
 
 
 def test_config_rejects_missing_mvs():

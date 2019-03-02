@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.inner_summary as pis, plspm.config as c, plspm.util as util
+import plspm.inner_summary as pis, plspm.config as c
 import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, plspm.inner_model as im
 from plspm.scheme import Scheme
 

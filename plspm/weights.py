@@ -16,10 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple
 
-import numpy as np, pandas as pd, plspm.util as util, plspm.config as c, statsmodels.api as sm
+import numpy as np, pandas as pd, plspm.config as c, statsmodels.api as sm
 from plspm.scheme import Scheme
 from plspm.mode import Mode
-from plspm.scale import Scale
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -39,10 +38,11 @@ class MetricWeights:
         lvs = self.__config.lvs()
         y = self.__data.dot(self.__weights)
         y = y.subtract(y.mean()).divide(y.std()) / self.__correction
-        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), y.values), index=lvs, columns=lvs)
+        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), y.values), index=lvs,
+                                     columns=lvs)
         Z = y.dot(inner_weights)
         for lv in list(lvs):
-            mvs = self.__config.blocks(lv)
+            mvs = self.__config.mvs(lv)
             weights = self.__config.mode(lv).value.outer_weights_metric(self.__data, Z, lv, mvs)
             self.__weights.loc[mvs, [lv]] = weights
         w_new = self.__weights.sum(axis=1).to_frame(name="weight")
@@ -71,9 +71,9 @@ class NonmetricWeights:
         mv_grouped_by_lv = {}
         y = np.zeros((len(data.index), len(config.lvs())), dtype=np.float64)
         for i, lv in enumerate(config.lvs()):
-            mvs = config.blocks(lv)
+            mvs = config.mvs(lv)
             self.__mvs.extend(mvs)
-            mv_grouped_by_lv[lv] = data.filter(config.blocks(lv)).values.astype(np.float64)
+            mv_grouped_by_lv[lv] = data.filter(config.mvs(lv)).values.astype(np.float64)
             self.__mv_grouped_by_lv_initial[lv] = mv_grouped_by_lv[lv].copy()
             sizes = mv_grouped_by_lv[lv].shape[1]
             weight = [1 / np.sqrt(sizes)] * sizes
@@ -91,7 +91,7 @@ class NonmetricWeights:
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
         Z = np.dot(self.__y, inner_weights)
         for i, lv in enumerate(list(self.__config.lvs())):
-            for j, mv in enumerate(list(self.__config.blocks(lv))):
+            for j, mv in enumerate(list(self.__config.mvs(lv))):
                 self.__mv_grouped_by_lv[lv][:, j] = \
                     self.__config.scale(mv).value.scale(lv, mv, Z[:, i], self)
             self.__weights[lv], self.__y[:, i] = \
@@ -104,7 +104,7 @@ class NonmetricWeights:
         weights = pd.DataFrame(0, index=self.__mvs, columns=lvs)
         data_new = pd.DataFrame(0, index=self.__index, columns=self.__mvs)
         for lv in self.__config.lvs():
-            mvs = self.__config.blocks(lv)
+            mvs = self.__config.mvs(lv)
             weights.loc[mvs, [lv]] = self.__weights[lv]
             data_new.loc[:, mvs] = self.__mv_grouped_by_lv[lv]
         weight_factors = 1 / (data_new.dot(weights).std(axis=0, skipna=True) / self.__correction)
@@ -114,7 +114,7 @@ class NonmetricWeights:
 
     def get_Z_for_mode_b(self, lv, mv, z_by_lv):
         mv_index = self.__config.mv_index(lv, mv)
-        if self.__config.mode(lv) != Mode.B or len(self.__config.blocks(lv)) == 1:
+        if self.__config.mode(lv) != Mode.B or len(self.__config.mvs(lv)) == 1:
             return z_by_lv
         if lv not in self.__betas:
             exogenous = sm.add_constant(self.__mv_grouped_by_lv[lv])

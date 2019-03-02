@@ -35,9 +35,9 @@ class MV:
 class Config:
     def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale: Scale = None):
         self.__modes = {}
-        self.__blocks = {}
-        self.__dummies = {}
         self.__mvs = {}
+        self.__dummies = {}
+        self.__mv_scales = {}
         self.__scaled = scaled
         self.__metric = True
         self.__default_scale = default_scale
@@ -62,16 +62,16 @@ class Config:
         return self.__path
 
     def odm(self):
-        return util.list_to_dummy(self.__blocks)
+        return util.list_to_dummy(self.__mvs)
 
     def mv_index(self, lv, mv):
-        return self.__blocks[lv].index(mv)
+        return self.__mvs[lv].index(mv)
 
-    def blocks(self, lv):
-        return self.__blocks[lv]
+    def mvs(self, lv):
+        return self.__mvs[lv]
 
     def lvs(self):
-        return self.__blocks.keys()
+        return self.__mvs.keys()
 
     def mode(self, lv: str):
         return self.__modes[lv]
@@ -83,7 +83,7 @@ class Config:
         return self.__scaled
 
     def scale(self, mv: str):
-        return self.__mvs[mv]
+        return self.__mv_scales[mv]
 
     def dummies(self, mv: str):
         return self.__dummies[mv]
@@ -93,25 +93,26 @@ class Config:
         if name not in self.__path:
             raise ValueError("Path matrix does not contain reference to latent variable " + name)
         self.__modes[name] = mode
-        self.__blocks[name] = []
+        self.__mvs[name] = []
         for mv in mvs:
-            self.__blocks[name].append(mv.name())
+            self.__mvs[name].append(mv.name())
             scale = self.__default_scale if mv.scale() is None else mv.scale()
-            self.__mvs[mv.name()] = scale
+            self.__mv_scales[mv.name()] = scale
             if scale is not None:
                 self.__metric = False
 
-    def add_lv_with_columns_named(self, col_name_starts_with: str, data: pd.DataFrame, lv_name: str, mode: Mode, default_scale: Scale = None):
+    def add_lv_with_columns_named(self, col_name_starts_with: str, data: pd.DataFrame, lv_name: str, mode: Mode,
+                                  default_scale: Scale = None):
         names = filter(lambda x: x.startswith(col_name_starts_with), list(data))
         mvs = list(map(lambda mv: MV(mv, default_scale), names))
         self.add_lv(lv_name, mode, *mvs)
 
     def filter(self, data: pd.DataFrame) -> pd.DataFrame:
-        if not set(self.__mvs.keys()).issubset(set(data)):
+        if not set(self.__mv_scales.keys()).issubset(set(data)):
             raise ValueError(
                 "The following manifest variables you configured are not present in the data set: " + ", ".join(
-                    set(self.__mvs.keys()).difference(set(data))))
-        data = data[list(self.__mvs.keys())]
+                    set(self.__mv_scales.keys()).difference(set(data))))
+        data = data[list(self.__mv_scales.keys())]
         if False in data.apply(lambda x: np.issubdtype(x.dtype, np.number)).values:
             raise ValueError(
                 "Data must only contain numeric values. Please convert any categorical data into numerical values.")
@@ -122,17 +123,17 @@ class Config:
             else:
                 return util.treat(data, scale=False)
         else:
-            if None in self.__mvs.values():
+            if None in self.__mv_scales.values():
                 raise TypeError(
                     "If you supply a scale for any MV, you must either supply a scale for all of them or specify a default scale.")
-            if set(self.__mvs.values()) == {Scale.RAW}:
+            if set(self.__mv_scales.values()) == {Scale.RAW}:
                 self.__scaled = False
-            if set(self.__mvs.values()) == {Scale.RAW, Scale.NUM}:
+            if set(self.__mv_scales.values()) == {Scale.RAW, Scale.NUM}:
                 self.__scaled = True
-                self.__mvs = dict.fromkeys(self.__mvs, Scale.NUM)
+                self.__mv_scales = dict.fromkeys(self.__mv_scales, Scale.NUM)
             data = util.treat(data) / np.sqrt((data.shape[0] - 1) / data.shape[0])
-            for mv in self.__mvs:
-                if self.__mvs[mv] in [Scale.ORD, Scale.NOM]:
+            for mv in self.__mv_scales:
+                if self.__mv_scales[mv] in [Scale.ORD, Scale.NOM]:
                     data.loc[:, mv] = util.rank(data.loc[:, mv])
-                    self.__dummies[mv] = util.dummy(data.loc[:, mv])
+                    self.__dummies[mv] = util.dummy(data.loc[:, mv]).values
             return data
