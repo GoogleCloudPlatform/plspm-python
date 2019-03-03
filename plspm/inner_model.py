@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, statsmodels.api as sm
+import pandas as pd, statsmodels.api as sm, numpy as np
 
 
 def summary(regression):
@@ -26,6 +26,27 @@ def summary(regression):
     summary['p>|t|'] = regression.pvalues
     return summary
 
+
+def effects(path: pd.DataFrame):
+    indirect_paths = pd.DataFrame(0, index=path.index, columns=path.columns)
+    effects = pd.DataFrame(columns=["from", "to", "direct", "indirect", "total"])
+    num_lvs = len(list(path))
+    if (num_lvs == 2):
+        total_paths = path
+    else:
+        path_effects = {}
+        path_effects[0] = path
+        for i in range(1, num_lvs):
+            path_effects[i] = path_effects[i - 1].dot(path)
+            indirect_paths = indirect_paths + path_effects[i]
+        total_paths = path + indirect_paths
+    for from_lv in list(path):
+        for to_lv in list(path):
+            if from_lv != to_lv and total_paths.loc[to_lv, from_lv] != 0:
+                effects = effects.append({"from": from_lv, "to": to_lv,
+                                "direct": path.loc[to_lv, from_lv], "indirect": indirect_paths.loc[to_lv, from_lv],
+                                          "total": total_paths.loc[to_lv, from_lv]}, ignore_index=True)
+    return effects
 
 class InnerModel:
     def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
@@ -42,6 +63,7 @@ class InnerModel:
             self.__path_coefficients.loc[dv, ivs] = regression.params
             self.__r_squared.loc[dv] = regression.rsquared
             self.__summaries[dv] = summary(regression)
+        self.__effects = effects(self.__path_coefficients)
 
     def path_coefficients(self) -> pd.DataFrame:
         return self.__path_coefficients
@@ -51,3 +73,6 @@ class InnerModel:
 
     def inner_model(self) -> dict:
         return self.__summaries
+
+    def effects(self) -> pd.DataFrame:
+        return self.__effects

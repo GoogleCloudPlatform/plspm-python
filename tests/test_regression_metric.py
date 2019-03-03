@@ -68,6 +68,13 @@ def test_plspm_satisfaction():
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
+    expected_effects = pd.read_csv("file:tests/data/satisfaction.effects.csv")
+
+    pt.assert_frame_equal(expected_effects.loc[:, ["from", "to"]],
+                           plspm_calc.effects().loc[:, ["from", "to"]])
+    npt.assert_allclose(expected_effects.drop(["from", "to"], axis=1),
+                        plspm_calc.effects().drop(["from", "to"], axis=1))
+
     assert math.isclose(0.609741624338411,plspm_calc.goodness_of_fit())
 
     plspm_calc_path = Plspm(satisfaction, config, Scheme.PATH)

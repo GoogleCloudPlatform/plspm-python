@@ -73,3 +73,6 @@ class Plspm:
 
     def goodness_of_fit(self) -> float:
         return self.__inner_summary.goodness_of_fit()
+
+    def effects(self) -> pd.DataFrame:
+        return self.__inner_model.effects()
