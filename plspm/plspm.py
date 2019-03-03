@@ -18,6 +18,7 @@
 import plspm.inner_summary as pis, plspm.config as c
 import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, plspm.inner_model as im
 from plspm.scheme import Scheme
+from plspm.unidimensionality import Unidimensionality
 
 
 class Plspm:
@@ -29,7 +30,8 @@ class Plspm:
         assert tolerance > 0
         assert scheme in Scheme
 
-        data = config.filter(input_data)
+        data_untreated = config.filter(input_data)
+        data = config.treat(data_untreated)
         correction = np.sqrt(data.shape[0] / (data.shape[0] - 1))
         odm = config.odm()
 
@@ -51,6 +53,7 @@ class Plspm:
         self.__inner_model = im.InnerModel(config.path(), scores)
         self.__outer_model = om.OuterModel(data, scores, weights, odm, self.__inner_model.r_squared())
         self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(), self.__outer_model.model())
+        self.__unidimensionality = Unidimensionality(config, data_untreated, correction)
         self.__scores = scores
 
     def scores(self):
@@ -76,3 +79,6 @@ class Plspm:
 
     def effects(self) -> pd.DataFrame:
         return self.__inner_model.effects()
+
+    def unidimensionality(self):
+        return self.__unidimensionality.summary()

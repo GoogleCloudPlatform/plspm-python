@@ -116,6 +116,9 @@ class Config:
         if False in data.apply(lambda x: np.issubdtype(x.dtype, np.number)).values:
             raise ValueError(
                 "Data must only contain numeric values. Please convert any categorical data into numerical values.")
+        return data
+
+    def treat(self, data: pd.DataFrame) -> pd.DataFrame:
         if self.__metric:
             if self.__scaled:
                 scale_values = data.stack().std() * np.sqrt((data.shape[0] - 1) / data.shape[0])
