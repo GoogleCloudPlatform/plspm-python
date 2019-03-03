@@ -33,18 +33,17 @@ class _FactorialInnerWeightCalculator:
 
 class _PathInnerWeightCalculator:
 
-    def calculate(self, path: pd.DataFrame, y_np: np.ndarray) -> np.ndarray:
-        E = path.copy()
-        y = pd.DataFrame(y_np, columns=E.columns)
-        for column in list(E):
-            follow = path.loc[column, :] == 1
-            if path.loc[column, :].sum() > 0:
-                E.loc[follow, column] = sm.OLS(y.loc[:, column], y.loc[:, follow]).fit().params
-            predec = path.loc[:, column] == 1
-            if path.loc[:, column].sum() > 0:
-                tmp = y.loc[:, predec].corrwith(y.loc[:, column])
-                E.loc[predec, column] = tmp
-        return E.values
+    def calculate(self, path: pd.DataFrame, y: np.ndarray) -> np.ndarray:
+        E = path.values.astype(np.float64)
+        for i in range(E.shape[0]):
+            follow = path.iloc[i, :] == 1
+            if path.iloc[i, :].sum() > 0:
+                E[follow, i] = sm.OLS(y[:, i], y[:, follow]).fit().params
+            predec = path.iloc[:, i] == 1
+            if path.iloc[:, i].sum() > 0:
+                tmp = np.corrcoef(np.column_stack((y[:, predec], y[:, i])), rowvar=False)[:,-1][:-1]
+                E[predec, i] = tmp
+        return E
 
 
 class Scheme(Enum):
