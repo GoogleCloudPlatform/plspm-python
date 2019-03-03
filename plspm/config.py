@@ -101,7 +101,7 @@ class Config:
             if scale is not None:
                 self.__metric = False
 
-    def add_lv_with_columns_named(self, col_name_starts_with: str, data: pd.DataFrame, lv_name: str, mode: Mode,
+    def add_lv_with_columns_named(self, lv_name: str, mode: Mode, data: pd.DataFrame, col_name_starts_with: str,
                                   default_scale: Scale = None):
         names = filter(lambda x: x.startswith(col_name_starts_with), list(data))
         mvs = list(map(lambda mv: MV(mv, default_scale), names))

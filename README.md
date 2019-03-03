@@ -20,8 +20,8 @@ It's hosted on pypi: https://pypi.org/project/plspm/
 Typical example with a Customer Satisfaction Model
 
 ```
-#!/usr/bin/python3
-import pandas as pd, plspm.util as util, plspm.config as c
+#!/usr/bin/env python3
+import pandas as pd, plspm.config as c
 from plspm.plspm import Plspm
 from plspm.scheme import Scheme
 from plspm.mode import Mode
@@ -37,12 +37,12 @@ sat_path_matrix = pd.DataFrame(
      [1, 0, 0, 0, 1, 0]],
     index=lvs, columns=lvs)
 config = c.Config(sat_path_matrix, scaled=False)
-config.add_lv_with_columns_named("imag", satisfaction, "IMAG", Mode.A)
-config.add_lv_with_columns_named("expe", satisfaction, "EXPE", Mode.A)
-config.add_lv_with_columns_named("qual", satisfaction, "QUAL", Mode.A)
-config.add_lv_with_columns_named("val", satisfaction, "VAL", Mode.A)
-config.add_lv_with_columns_named("sat", satisfaction, "SAT", Mode.A)
-config.add_lv_with_columns_named("loy", satisfaction, "LOY", Mode.A)
+config.add_lv_with_columns_named("IMAG", Mode.A, satisfaction, "imag")
+config.add_lv_with_columns_named("EXPE", Mode.A, satisfaction, "expe")
+config.add_lv_with_columns_named("QUAL", Mode.A, satisfaction, "qual")
+config.add_lv_with_columns_named("VAL", Mode.A, satisfaction, "val")
+config.add_lv_with_columns_named("SAT", Mode.A, satisfaction, "sat")
+config.add_lv_with_columns_named("LOY", Mode.A, satisfaction, "loy")
 plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
 print(plspm_calc.inner_summary())
 print(plspm_calc.path_coefficients())
@@ -72,7 +72,7 @@ LOY   0.275150  0.000000  0.000000  0.000000  0.495479    0
 Example with the classic Russett data (original data set)
 
 ```
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import pandas as pd, plspm.config as c
 from plspm.plspm import Plspm
 from plspm.scale import Scale
@@ -95,7 +95,7 @@ config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV(
 plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
 
 print(plspm_calc.inner_summary())
-print(plspm_calc.path_coefficients())
+print(plspm_calc.effects())
 ```
 
 This will produce the output:
@@ -105,10 +105,9 @@ AGRI     Exogenous   0.000000           0.739560         0.000000  0.739560
 IND      Exogenous   0.000000           0.907524         0.000000  0.907524
 POLINS  Endogenous   0.592258           0.565175         0.334729  0.565175
 
-            AGRI       IND  POLINS
-AGRI    0.000000  0.000000       0
-IND     0.000000  0.000000       0
-POLINS  0.225639  0.671457       0
+   from      to    direct  indirect     total
+0  AGRI  POLINS  0.225639       0.0  0.225639
+1   IND  POLINS  0.671457       0.0  0.671457
 ```
 
 #### Example 2
