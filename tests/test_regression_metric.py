@@ -106,7 +106,6 @@ def test_plspm_russa_mode_b():
     config.add_lv_with_columns_named("LOY", Mode.B, satisfaction, "loy")
 
     plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
-    print(plspm_calc.inner_summary())
     expected_inner_summary = pd.read_csv("file:tests/data/satisfaction.modeb.inner-summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
                         util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())

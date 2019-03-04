@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple
 
-import numpy as np, pandas as pd, plspm.config as c, statsmodels.api as sm
+import numpy as np, pandas as pd, plspm.config as c, statsmodels.api as sm, plspm.util as util
 from plspm.scheme import Scheme
 from plspm.mode import Mode
 
@@ -28,7 +28,7 @@ class MetricWeights:
         weight_factors = correction / data.dot(config.odm()).std(axis=0).values
         self.__mvs = list(config.odm().index)
         wf_diag = np.diag(weight_factors)
-        weights = config.odm().dot(wf_diag).values
+        weights = np.dot(config.odm(), wf_diag)
         self.__w_old = weights.sum(axis=1)
         self.__data = data
         self.__config = config
@@ -37,9 +37,9 @@ class MetricWeights:
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
         lvs = self.__config.lvs()
-        y = self.__data.dot(self.__weights)
-        y = y.subtract(y.mean()).divide(y.std()) / self.__correction
-        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), y.values)
+        y = np.dot(self.__data, self.__weights)
+        y = util.treat_numpy(y) / self.__correction
+        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), y)
         Z = np.dot(y, inner_weights)
         for i, lv in enumerate(list(lvs)):
             mvs = self.__config.mvs(lv)

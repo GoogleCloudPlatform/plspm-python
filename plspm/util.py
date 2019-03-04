@@ -31,7 +31,7 @@ def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_val
 
 def treat_numpy(data: np.ndarray) -> np.ndarray:
     data = data - np.mean(data)
-    return data / np.std(data, ddof=1)
+    return data / np.std(data, axis=0, ddof=1)
 
 
 def sort_cols(data: pd.DataFrame) -> pd.DataFrame:
