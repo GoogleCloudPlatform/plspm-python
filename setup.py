@@ -22,7 +22,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="plspm",
-    version="0.2.1",
+    version="0.2.2",
     author="Jez Humble",
     author_email="humble@google.com",
     description="A library implementing the Partial Least Squares Path Model algorithm",
@@ -33,7 +33,8 @@ setuptools.setup(
         "pandas",
         "numpy",
         "scipy",
-        "statsmodels"
+        "statsmodels",
+        "scikit-learn"
     ],
     packages=setuptools.find_packages(),
     classifiers=[
