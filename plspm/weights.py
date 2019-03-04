@@ -99,7 +99,7 @@ class NonmetricWeights:
             self.__weights[lv], self.__y[:, i] = \
                 self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv, Z[:, i], lv,
                                                                      self.__correction)
-        return np.power(np.subtract(np.abs(y_old), np.abs(self.__y)), 2).sum(axis=1).sum(axis=0)
+        return np.power(np.abs(y_old) - np.abs(self.__y), 2).sum()
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         lvs = self.__config.lvs()
