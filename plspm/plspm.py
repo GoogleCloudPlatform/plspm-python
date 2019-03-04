@@ -33,10 +33,9 @@ class Plspm:
         data_untreated = config.filter(input_data)
         data = config.treat(data_untreated)
         correction = np.sqrt(data.shape[0] / (data.shape[0] - 1))
-        odm = config.odm()
 
         if config.metric():
-            calculator = w.MetricWeights(data, config, correction, odm)
+            calculator = w.MetricWeights(data, config, correction)
         else:
             calculator = w.NonmetricWeights(data, config, correction)
 
@@ -51,7 +50,7 @@ class Plspm:
         data, scores, weights = calculator.calculate()
 
         self.__inner_model = im.InnerModel(config.path(), scores)
-        self.__outer_model = om.OuterModel(data, scores, weights, odm, self.__inner_model.r_squared())
+        self.__outer_model = om.OuterModel(data, scores, weights, config.odm(), self.__inner_model.r_squared())
         self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(), self.__outer_model.model())
         self.__unidimensionality = Unidimensionality(config, data_untreated, correction)
         self.__scores = scores

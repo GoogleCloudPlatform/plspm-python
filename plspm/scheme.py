@@ -41,6 +41,9 @@ class _PathInnerWeightCalculator:
                 E[follow, i] = sm.OLS(y[:, i], y[:, follow]).fit().params
             predec = path.iloc[:, i] == 1
             if path.iloc[:, i].sum() > 0:
+                print(y)
+                print(predec)
+                print(np.corrcoef(np.column_stack((y[:, predec], y[:, i])), rowvar=False))
                 tmp = np.corrcoef(np.column_stack((y[:, predec], y[:, i])), rowvar=False)[:,-1][:-1]
                 E[predec, i] = tmp
         return E
