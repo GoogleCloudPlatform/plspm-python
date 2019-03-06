@@ -23,7 +23,7 @@ from plspm.mode import Mode
 pd.options.mode.chained_assignment = None  # default='warn'
 
 
-class MetricWeights:
+class _MetricWeights:
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
         weight_factors = correction / data.dot(config.odm()).std(axis=0).values
         self.__mvs = list(config.odm().index)
@@ -66,7 +66,7 @@ class MetricWeights:
         return self.__data, y, pd.DataFrame(weights.sum(axis=1), index=self.__mvs, columns=["weights"])
 
 
-class NonmetricWeights:
+class _NonmetricWeights:
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
         self.__mv_grouped_by_lv_initial = {}
         self.__mvs = []
@@ -134,3 +134,28 @@ class NonmetricWeights:
 
     def dummies(self, mv: str) -> pd.DataFrame:
         return self.__config.dummies(mv)
+
+
+class WeightsCalculatorFactory:
+    def __init__(self, config: c.Config, iterations: int, tolerance: float, correction: float, scheme: Scheme):
+        self.__iterations = iterations
+        self.__tolerance = tolerance
+        self.__config = config
+        self.__correction = correction
+        self.__scheme = scheme
+
+    def calculate(self, data: pd.DataFrame):
+        if self.__config.metric():
+            calculator = _MetricWeights(data, self.__config, self.__correction)
+        else:
+            calculator = _NonmetricWeights(data, self.__config, self.__correction)
+
+        iteration = 0
+        while True:
+            iteration += 1
+            convergence = calculator.iterate(self.__scheme)
+            if (convergence < self.__tolerance) or (iteration > self.__iterations):
+                break
+        if iteration > self.__iterations:
+            raise Exception("Could not converge after " + str(iteration) + " iterations")
+        return calculator.calculate()
