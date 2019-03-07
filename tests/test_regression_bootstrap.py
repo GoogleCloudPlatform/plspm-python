@@ -46,4 +46,4 @@ def test_bootstrap_metric():
 
     expected_boot_loadings = pd.read_csv("file:tests/data/satisfaction_boot_loadings.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_boot_loadings),
-                        util.sort_cols(plspm_calc.bootstrap().loadings()), rtol=0.5)
+                        util.sort_cols(plspm_calc.bootstrap().loading()), rtol=0.5)

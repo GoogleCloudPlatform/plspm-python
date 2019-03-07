@@ -53,7 +53,7 @@ class Bootstrap:
         self.__r_squared = _create_summary(r_squared, inner_model.r_squared()).loc[inner_model.endogenous(), :]
         self.__total_effects = _create_summary(total_effects, inner_model.effects().loc[:, "total"])
         self.__paths = _create_summary(paths, inner_model.effects().loc[:, "direct"])
-        self._loadings = _create_summary(loadings, outer_model.model().loc[:, "loading"])
+        self.__loading = _create_summary(loadings, outer_model.model().loc[:, "loading"])
 
     def weights(self):
         return self.__weights
@@ -67,5 +67,5 @@ class Bootstrap:
     def paths(self):
         return self.__paths[self.__paths["mean"] != 0]
 
-    def loadings(self):
-        return self._loadings
+    def loading(self):
+        return self.__loading
