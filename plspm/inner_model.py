@@ -18,7 +18,7 @@
 import pandas as pd, statsmodels.api as sm
 
 
-def summary(regression):
+def _summary(regression):
     summary = pd.DataFrame(0, columns=['estimate', 'std error', 't', 'p>|t|'], index=regression.params.index)
     summary['estimate'] = regression.params
     summary['std error'] = regression.bse
@@ -27,7 +27,7 @@ def summary(regression):
     return summary
 
 
-def effects(path: pd.DataFrame):
+def _effects(path: pd.DataFrame):
     indirect_paths = pd.DataFrame(0, index=path.index, columns=path.columns)
     effects = pd.DataFrame(columns=["from", "to", "direct", "indirect", "total"])
     num_lvs = len(list(path))
@@ -63,8 +63,8 @@ class InnerModel:
             regression = sm.OLS(scores.loc[:, dv], exogenous).fit()
             self.__path_coefficients.loc[dv, ivs] = regression.params
             self.__r_squared.loc[dv] = regression.rsquared
-            self.__summaries[dv] = summary(regression)
-        self.__effects = effects(self.__path_coefficients)
+            self.__summaries[dv] = _summary(regression)
+        self.__effects = _effects(self.__path_coefficients)
 
     def path_coefficients(self) -> pd.DataFrame:
         return self.__path_coefficients

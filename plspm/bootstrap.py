@@ -34,7 +34,7 @@ class Bootstrap:
         r_squared = pd.DataFrame(columns=inner_model.r_squared().index)
         total_effects = pd.DataFrame(columns=inner_model.effects().index)
         paths = pd.DataFrame(columns=inner_model.effects().index)
-
+        crossloadings = pd.DataFrame(columns=data.columns)
         for i in range(1, iterations):
             boot_observations = np.random.randint(observations, size=observations)
             boot_data = config.treat(data.iloc[boot_observations, :])
@@ -42,12 +42,15 @@ class Bootstrap:
             weights = weights.append(_weights.T, ignore_index=True)
             inner_model = im.InnerModel(config.path(), _scores)
             r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)
-            total_effects = total_effects.append(inner_model.effects().loc[:,"total"].T, ignore_index=True)
-            paths = paths.append(inner_model.effects().loc[:,"direct"].T, ignore_index=True)
+            total_effects = total_effects.append(inner_model.effects().loc[:, "total"].T, ignore_index=True)
+            paths = paths.append(inner_model.effects().loc[:, "direct"].T, ignore_index=True)
+            crossloadings = crossloadings.append(
+                (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm()).sum(axis=1), ignore_index=True)
         self.__weights = _create_summary(weights)
-        self.__r_squared = _create_summary(r_squared).loc[inner_model.endogenous(),:]
+        self.__r_squared = _create_summary(r_squared).loc[inner_model.endogenous(), :]
         self.__total_effects = _create_summary(total_effects)
         self.__paths = _create_summary(paths)
+        self._loadings = _create_summary(crossloadings)
 
     def weights(self):
         return self.__weights
@@ -60,3 +63,6 @@ class Bootstrap:
 
     def paths(self):
         return self.__paths[self.__paths["mean"] != 0]
+
+    def loadings(self):
+        return self._loadings
