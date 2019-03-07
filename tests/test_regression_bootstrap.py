@@ -35,3 +35,7 @@ def test_bootstrap_metric():
     expected_boot_rsquared = pd.read_csv("file:tests/data/satisfaction_boot_rsquared.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_boot_rsquared.drop(["original"], axis=1)),
                         util.sort_cols(plspm_calc.bootstrap().r_squared().drop(["original"], axis=1)), rtol=0.5)
+
+    expected_boot_total_effects = pd.read_csv("file:tests/data/satisfaction_boot_total_effects.csv", index_col=0)
+    npt.assert_allclose(util.sort_cols(expected_boot_total_effects.drop(["original"], axis=1)),
+                        util.sort_cols(plspm_calc.bootstrap().total_effects().drop(["original"], axis=1)), rtol=0.5)

@@ -43,10 +43,12 @@ def effects(path: pd.DataFrame):
     for from_lv in list(path):
         for to_lv in list(path):
             if from_lv != to_lv and total_paths.loc[to_lv, from_lv] != 0:
-                effects = effects.append({"from": from_lv, "to": to_lv,
-                                "direct": path.loc[to_lv, from_lv], "indirect": indirect_paths.loc[to_lv, from_lv],
-                                          "total": total_paths.loc[to_lv, from_lv]}, ignore_index=True)
+                effect = pd.Series({"from": from_lv, "to": to_lv, "direct": path.loc[to_lv, from_lv],
+                                    "indirect": indirect_paths.loc[to_lv, from_lv],
+                                    "total": total_paths.loc[to_lv, from_lv]}, name=from_lv + " -> " + to_lv)
+                effects = effects.append(effect)
     return effects
+
 
 class InnerModel:
     def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
@@ -76,5 +78,5 @@ class InnerModel:
     def effects(self) -> pd.DataFrame:
         return self.__effects
 
-    def endogenous(self) -> pd.Series:
+    def endogenous(self) -> list:
         return self.__endogenous
