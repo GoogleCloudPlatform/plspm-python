@@ -15,26 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.config as c, pandas as pd, numpy as np, plspm.inner_model as im
+import plspm.config as c, pandas as pd, numpy as np, plspm.inner_model as im, plspm.outer_model as om
+from plspm.weights import WeightsCalculatorFactory
 
 
-def _create_summary(data: pd.DataFrame):
+def _create_summary(data: pd.DataFrame, original):
     summary = pd.DataFrame(0, index=data.columns, columns=["original", "mean", "std.error", "perc.025", "perc.975"])
     summary.loc[:, "mean"] = data.mean(axis=0)
     summary.loc[:, "std.error"] = data.std(axis=0)
     summary.loc[:, "perc.025"] = data.quantile(0.025, axis=0)
     summary.loc[:, "perc.975"] = data.quantile(0.975, axis=0)
+    summary.loc[:, "original"] = original
     return summary
 
 
 class Bootstrap:
-    def __init__(self, config: c.Config, data: pd.DataFrame, inner_model: im.InnerModel, calculator, iterations: int):
+    def __init__(self, config: c.Config, data: pd.DataFrame, inner_model: im.InnerModel, outer_model: om.OuterModel,
+                 calculator: WeightsCalculatorFactory, iterations: int):
         observations = data.shape[0]
         weights = pd.DataFrame(columns=data.columns)
         r_squared = pd.DataFrame(columns=inner_model.r_squared().index)
         total_effects = pd.DataFrame(columns=inner_model.effects().index)
         paths = pd.DataFrame(columns=inner_model.effects().index)
-        crossloadings = pd.DataFrame(columns=data.columns)
+        loadings = pd.DataFrame(columns=data.columns)
         for i in range(1, iterations):
             boot_observations = np.random.randint(observations, size=observations)
             boot_data = config.treat(data.iloc[boot_observations, :])
@@ -44,13 +47,13 @@ class Bootstrap:
             r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)
             total_effects = total_effects.append(inner_model.effects().loc[:, "total"].T, ignore_index=True)
             paths = paths.append(inner_model.effects().loc[:, "direct"].T, ignore_index=True)
-            crossloadings = crossloadings.append(
+            loadings = loadings.append(
                 (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm()).sum(axis=1), ignore_index=True)
-        self.__weights = _create_summary(weights)
-        self.__r_squared = _create_summary(r_squared).loc[inner_model.endogenous(), :]
-        self.__total_effects = _create_summary(total_effects)
-        self.__paths = _create_summary(paths)
-        self._loadings = _create_summary(crossloadings)
+        self.__weights = _create_summary(weights, outer_model.model().loc[:, "weights"])
+        self.__r_squared = _create_summary(r_squared, inner_model.r_squared()).loc[inner_model.endogenous(), :]
+        self.__total_effects = _create_summary(total_effects, inner_model.effects().loc[:, "total"])
+        self.__paths = _create_summary(paths, inner_model.effects().loc[:, "direct"])
+        self._loadings = _create_summary(loadings, outer_model.model().loc[:, "loading"])
 
     def weights(self):
         return self.__weights

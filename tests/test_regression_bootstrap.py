@@ -29,21 +29,21 @@ def test_bootstrap_metric():
 
     plspm_calc = Plspm(satisfaction, config, bootstrap=True)
     expected_boot_weights = pd.read_csv("file:tests/data/satisfaction_boot_weights.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(expected_boot_weights.drop(["original"], axis=1)),
-                        util.sort_cols(plspm_calc.bootstrap().weights().drop(["original"], axis=1)), rtol=0.5)
+    npt.assert_allclose(util.sort_cols(expected_boot_weights),
+                        util.sort_cols(plspm_calc.bootstrap().weights()), rtol=0.5)
 
     expected_boot_rsquared = pd.read_csv("file:tests/data/satisfaction_boot_rsquared.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(expected_boot_rsquared.drop(["original"], axis=1)),
-                        util.sort_cols(plspm_calc.bootstrap().r_squared().drop(["original"], axis=1)), rtol=0.5)
+    npt.assert_allclose(util.sort_cols(expected_boot_rsquared),
+                        util.sort_cols(plspm_calc.bootstrap().r_squared()), rtol=0.5)
 
     expected_boot_total_effects = pd.read_csv("file:tests/data/satisfaction_boot_total_effects.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(expected_boot_total_effects.drop(["original"], axis=1)),
-                        util.sort_cols(plspm_calc.bootstrap().total_effects().drop(["original"], axis=1)), rtol=0.5)
+    npt.assert_allclose(util.sort_cols(expected_boot_total_effects),
+                        util.sort_cols(plspm_calc.bootstrap().total_effects()), rtol=0.5)
 
     expected_boot_paths = pd.read_csv("file:tests/data/satisfaction_boot_paths.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(expected_boot_paths.drop(["original"], axis=1)),
-                        util.sort_cols(plspm_calc.bootstrap().paths().drop(["original"], axis=1)), rtol=2.5)
+    npt.assert_allclose(util.sort_cols(expected_boot_paths),
+                        util.sort_cols(plspm_calc.bootstrap().paths()), rtol=5)
 
     expected_boot_loadings = pd.read_csv("file:tests/data/satisfaction_boot_loadings.csv", index_col=0)
-    npt.assert_allclose(util.sort_cols(expected_boot_loadings.drop(["original"], axis=1)),
-                        util.sort_cols(plspm_calc.bootstrap().loadings().drop(["original"], axis=1)), rtol=2.5)
+    npt.assert_allclose(util.sort_cols(expected_boot_loadings),
+                        util.sort_cols(plspm_calc.bootstrap().loadings()), rtol=0.5)

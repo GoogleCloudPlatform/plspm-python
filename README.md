@@ -2,9 +2,11 @@
 
 _Please note: This is not an officially supported Google product._
 
-**plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a partial port of the R package [plspm](https://github.com/gastonstat/plspm).
+**plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a port of the R package [plspm](https://github.com/gastonstat/plspm).
 
-Currently it will calculate modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. At present the library will not perform bootstrapping or handle missing values in non-metric data.
+This library will calculate using modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. Bootstrap validation is available, and reliability measures are also calculated using the same methods as the original R library.
+
+Limitations: at present this library will not handle missing values in non-metric data.
 
 ## Installation
 You can install the latest version of this package using pip:
