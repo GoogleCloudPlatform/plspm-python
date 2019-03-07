@@ -68,12 +68,12 @@ def test_plspm_satisfaction():
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
-    expected_effects = pd.read_csv("file:tests/data/satisfaction.effects.csv")
+    expected_effects = pd.read_csv("file:tests/data/satisfaction.effects.csv", index_col=0)
 
-    pt.assert_frame_equal(expected_effects.loc[:, ["from", "to"]],
-                           plspm_calc.effects().loc[:, ["from", "to"]])
-    npt.assert_allclose(expected_effects.drop(["from", "to"], axis=1),
-                        plspm_calc.effects().drop(["from", "to"], axis=1))
+    pt.assert_frame_equal(expected_effects.loc[:, ["from", "to"]].sort_index(),
+                           plspm_calc.effects().loc[:, ["from", "to"]].sort_index())
+    npt.assert_allclose(expected_effects.drop(["from", "to"], axis=1).sort_index(),
+                        plspm_calc.effects().drop(["from", "to"], axis=1).sort_index())
 
     expected_unidimensionality = pd.read_csv("file:tests/data/satisfaction_unidim.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_unidimensionality.drop(["mode"], axis=1)).sort_index(),
