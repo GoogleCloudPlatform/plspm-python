@@ -49,7 +49,7 @@ class Plspm:
         if bootstrap:
             if (treated_data.shape[0] < 10):
                 raise Exception("Bootstrapping could not be performed, at least 10 observations are required.")
-            self.__bootstrap = Bootstrap(config, data_untreated, calculator, bootstrap_iterations)
+            self.__bootstrap = Bootstrap(config, data_untreated, self.__inner_model, calculator, bootstrap_iterations)
 
     def scores(self):
         return self.__scores

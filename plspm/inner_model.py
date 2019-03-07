@@ -54,9 +54,8 @@ class InnerModel:
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
         self.__path_coefficients = pd.DataFrame(0, columns=path.columns, index=path.index)
         endogenous = path.sum(axis=1).astype(bool)
-        num_endo = endogenous.sum()
-        for aux in range(0, num_endo):
-            dv = endogenous[endogenous == True].index[aux]
+        self.__endogenous = list(endogenous[endogenous == True].index)
+        for dv in self.__endogenous:
             ivs = path.loc[dv,][path.loc[dv,] == 1].index
             exogenous = sm.add_constant(scores.loc[:, ivs])
             regression = sm.OLS(scores.loc[:, dv], exogenous).fit()
@@ -76,3 +75,6 @@ class InnerModel:
 
     def effects(self) -> pd.DataFrame:
         return self.__effects
+
+    def endogenous(self) -> pd.Series:
+        return self.__endogenous

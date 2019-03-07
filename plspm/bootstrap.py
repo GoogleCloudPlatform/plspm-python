@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.config as c, pandas as pd, numpy as np
+import plspm.config as c, pandas as pd, numpy as np, plspm.inner_model as im
 
 
 def _create_summary(data: pd.DataFrame):
@@ -28,15 +28,22 @@ def _create_summary(data: pd.DataFrame):
 
 
 class Bootstrap:
-    def __init__(self, config: c.Config, data: pd.DataFrame, calculator, iterations: int):
+    def __init__(self, config: c.Config, data: pd.DataFrame, inner_model: im.InnerModel, calculator, iterations: int):
         observations = data.shape[0]
         weights = pd.DataFrame(columns=data.columns)
+        r_squared = pd.DataFrame(columns=inner_model.r_squared().index)
         for i in range(1, iterations):
             boot_observations = np.random.randint(observations, size=observations)
             boot_data = config.treat(data.iloc[boot_observations, :])
             _final_data, _scores, _weights = calculator.calculate(boot_data)
             weights = weights.append(_weights.T, ignore_index=True)
+            inner_model = im.InnerModel(config.path(), _scores)
+            r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)
         self.__weights = _create_summary(weights)
+        self.__r_squared = _create_summary(r_squared).loc[inner_model.endogenous(),:]
 
     def weights(self):
         return self.__weights
+
+    def r_squared(self):
+        return self.__r_squared
