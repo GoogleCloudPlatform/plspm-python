@@ -30,8 +30,8 @@ def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_val
 
 
 def treat_numpy(data: np.ndarray) -> np.ndarray:
-    data = data - np.mean(data)
-    return data / np.std(data, axis=0, ddof=1)
+    data = data - np.nanmean(data)
+    return data / np.nanstd(data, axis=0, ddof=1)
 
 
 def sort_cols(data: pd.DataFrame) -> pd.DataFrame:
@@ -39,11 +39,12 @@ def sort_cols(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def impute(data: pd.DataFrame) -> pd.DataFrame:
+    imputed = pd.DataFrame(0, data.index, data.columns)
     for column in list(data):
         average = data[column].mean(skipna=True)
-        data[column].fillna(average, inplace=True)
-        assert math.isclose(data[column].mean(), average, rel_tol=1e-09, abs_tol=0.0)
-    return data
+        imputed[column] = data[column].fillna(average)
+        assert math.isclose(imputed[column].mean(), average, rel_tol=1e-09, abs_tol=0.0)
+    return imputed
 
 
 def list_to_dummy(data: dict) -> pd.DataFrame:
@@ -59,7 +60,7 @@ def rank(data: pd.Series) -> pd.Series:
     ranked = unique.rank()
     lookup = pd.concat([unique, ranked], axis=1)
     lookup_series = pd.Series(lookup.iloc[:, 1].values, index=lookup.iloc[:, 0])
-    return data.replace(lookup_series.to_dict()).astype(int)
+    return data.replace(lookup_series.to_dict()).astype(float)
 
 
 def dummy(data: pd.Series) -> pd.DataFrame:

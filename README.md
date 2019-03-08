@@ -6,8 +6,6 @@ _Please note: This is not an officially supported Google product._
 
 This library will calculate using modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. Bootstrap validation is available, and reliability measures are also calculated using the same methods as the original R library.
 
-Limitations: at present this library will not handle missing values in non-metric data.
-
 ## Installation
 You can install the latest version of this package using pip:
 

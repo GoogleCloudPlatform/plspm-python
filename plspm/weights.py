@@ -71,6 +71,7 @@ class _NonmetricWeights:
         self.__mv_grouped_by_lv_initial = {}
         self.__mvs = []
         mv_grouped_by_lv = {}
+        self.__mv_grouped_by_lv_missing = {}
         y = np.zeros((len(data.index), len(config.lvs())), dtype=np.float64)
         for i, lv in enumerate(config.lvs()):
             mvs = config.mvs(lv)
@@ -79,7 +80,14 @@ class _NonmetricWeights:
             self.__mv_grouped_by_lv_initial[lv] = mv_grouped_by_lv[lv].copy()
             sizes = mv_grouped_by_lv[lv].shape[1]
             weight = [1 / np.sqrt(sizes)] * sizes
-            y[:, i] = np.dot(mv_grouped_by_lv[lv], weight)
+            if np.isnan(np.sum(mv_grouped_by_lv[lv])):
+                self.__mv_grouped_by_lv_missing[lv] = 1 - np.isnan(mv_grouped_by_lv[lv])
+                for j in range(len(data.index)):
+                    numerator = np.nansum(mv_grouped_by_lv[lv][j, :] * weight)
+                    denominator = np.power(weight * self.__mv_grouped_by_lv_missing[lv][j, :], 2).sum()
+                    y[j, i] = numerator / denominator
+            else:
+                y[:, i] = np.dot(mv_grouped_by_lv[lv], weight)
         self.__weights = {}
         self.__y = y
         self.__mv_grouped_by_lv = mv_grouped_by_lv
@@ -97,7 +105,8 @@ class _NonmetricWeights:
                 self.__mv_grouped_by_lv[lv][:, j] = \
                     self.__config.scale(mv).value.scale(lv, mv, Z[:, i], self)
             self.__weights[lv], self.__y[:, i] = \
-                self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv, Z[:, i], lv,
+                self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv,
+                                                                     self.__mv_grouped_by_lv_missing, Z[:, i], lv,
                                                                      self.__correction)
         return np.power(np.abs(y_old) - np.abs(self.__y), 2).sum()
 

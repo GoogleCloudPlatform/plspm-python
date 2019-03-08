@@ -39,16 +39,19 @@ class Bootstrap:
         paths = pd.DataFrame(columns=inner_model.effects().index)
         loadings = pd.DataFrame(columns=data.columns)
         for i in range(1, iterations):
-            boot_observations = np.random.randint(observations, size=observations)
-            boot_data = config.treat(data.iloc[boot_observations, :])
-            _final_data, _scores, _weights = calculator.calculate(boot_data)
-            weights = weights.append(_weights.T, ignore_index=True)
-            inner_model = im.InnerModel(config.path(), _scores)
-            r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)
-            total_effects = total_effects.append(inner_model.effects().loc[:, "total"].T, ignore_index=True)
-            paths = paths.append(inner_model.effects().loc[:, "direct"].T, ignore_index=True)
-            loadings = loadings.append(
-                (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm()).sum(axis=1), ignore_index=True)
+            try:
+                boot_observations = np.random.randint(observations, size=observations)
+                boot_data = config.treat(data.iloc[boot_observations, :])
+                _final_data, _scores, _weights = calculator.calculate(boot_data)
+                weights = weights.append(_weights.T, ignore_index=True)
+                inner_model = im.InnerModel(config.path(), _scores)
+                r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)
+                total_effects = total_effects.append(inner_model.effects().loc[:, "total"].T, ignore_index=True)
+                paths = paths.append(inner_model.effects().loc[:, "direct"].T, ignore_index=True)
+                loadings = loadings.append(
+                    (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm()).sum(axis=1), ignore_index=True)
+            except:
+                pass
         self.__weights = _create_summary(weights, outer_model.model().loc[:, "weights"])
         self.__r_squared = _create_summary(r_squared, inner_model.r_squared()).loc[inner_model.endogenous(), :]
         self.__total_effects = _create_summary(total_effects, inner_model.effects().loc[:, "total"])

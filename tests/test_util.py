@@ -32,4 +32,4 @@ def test_impute_missing_values():
 def test_ranking():
     data = pd.Series([0.75, -1.5, 3, -1.5, 15])
     expected_rank = pd.Series([2, 1, 3, 1, 4])
-    assert util.rank(data).equals(expected_rank)
+    assert util.rank(data).astype(int).equals(expected_rank)

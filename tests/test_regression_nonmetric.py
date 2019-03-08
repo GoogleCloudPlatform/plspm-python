@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas.testing as pt, pandas as pd, plspm.util as util, numpy.testing as npt, plspm.config as c, math
+import pandas.testing as pt, pandas as pd, plspm.util as util, numpy.testing as npt, plspm.config as c, math, numpy as np
 from plspm.plspm import Plspm
 from plspm.scale import Scale
 from plspm.scheme import Scheme
@@ -98,7 +98,6 @@ def test_plspm_russa_categorical():
     config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
     config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORD), c.MV("labo", Scale.ORD))
-    # config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORDOLD), c.MV("labo", Scale.ORDOLD))
     config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo", Scale.NOM), c.MV("inst"))
 
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
@@ -119,5 +118,22 @@ def test_plspm_russa_categorical_mode_b():
     expected_inner_summary = pd.read_csv("file:tests/data/russa.categorical.mode_b.inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
                         util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+    pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
+                           plspm_calc.inner_summary().loc[:, "type"].sort_index())
+
+def test_plspm_russa_missing_data():
+    russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
+    russa.iloc[0, 0] = np.NaN
+    russa.iloc[3, 3] = np.NaN
+    russa.iloc[5, 5] = np.NaN
+    config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
+    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
+
+    plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
+    expected_inner_summary = pd.read_csv("file:tests/data/russa.missing.inner_summary.csv", index_col=0)
+    npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index(), rtol=0.5)
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())

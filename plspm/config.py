@@ -116,15 +116,17 @@ class Config:
         if False in data.apply(lambda x: np.issubdtype(x.dtype, np.number)).values:
             raise ValueError(
                 "Data must only contain numeric values. Please convert any categorical data into numerical values.")
+        self.__missing = data.isnull().values.any()
         return data
 
     def treat(self, data: pd.DataFrame) -> pd.DataFrame:
         if self.__metric:
+            metric_data = util.impute(data) if self.__missing else data
             if self.__scaled:
-                scale_values = data.stack().std() * np.sqrt((data.shape[0] - 1) / data.shape[0])
-                return util.treat(data, scale_values=scale_values)
+                scale_values = metric_data.stack().std() * np.sqrt((metric_data.shape[0] - 1) / metric_data.shape[0])
+                return util.treat(metric_data, scale_values=scale_values)
             else:
-                return util.treat(data, scale=False)
+                return util.treat(metric_data, scale=False)
         else:
             if None in self.__mv_scales.values():
                 raise TypeError(
