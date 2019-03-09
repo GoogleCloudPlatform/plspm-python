@@ -22,7 +22,9 @@ from enum import Enum
 class _Numeric:
 
     def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
-        return util.treat_numpy(weights.mv_grouped_by_lv(lv, mv)) * weights.correction()
+        data = weights.mv_grouped_by_lv(lv, mv)
+        finite_elements = np.isfinite(data).sum()
+        return util.treat_numpy(data) * np.sqrt(finite_elements / (finite_elements - 1))
 
 
 class _Raw:

@@ -134,6 +134,6 @@ def test_plspm_russa_missing_data():
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.missing.inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index(), rtol=0.5)
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())

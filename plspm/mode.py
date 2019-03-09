@@ -31,7 +31,7 @@ class _ModeA:
             weights = np.nansum(mv_grouped_by_lv[lv] * Z[:, np.newaxis], axis=0)
             weights = weights / np.sum(np.power(mv_grouped_by_lv_missing[lv] * Z[:, np.newaxis], 2), axis=0)
             Y = np.nansum(np.transpose(mv_grouped_by_lv[lv]) * weights[:, np.newaxis], axis=0)
-            Y = Y / np.sum(np.power(np.transpose(mv_grouped_by_lv_missing[lv]) * weights[:, np.newaxis], 2))
+            Y = Y / np.sum(np.power(np.transpose(mv_grouped_by_lv_missing[lv]) * weights[:, np.newaxis], 2), axis=0)
         else:
             weights = np.dot(np.transpose(mv_grouped_by_lv[lv]), Z) / np.power(Z, 2).sum()
             Y = np.dot(mv_grouped_by_lv[lv], weights)
