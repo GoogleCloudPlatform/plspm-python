@@ -67,7 +67,7 @@ SAT   0.200724 -0.002754  0.122145  0.589331  0.000000    0
 LOY   0.275150  0.000000  0.000000  0.000000  0.495479    0
 ```
 
-### PLS-PM with nonmetric data
+### PLS-PM with Nonmetric Data
 
 Example with the classic Russett data (original data set)
 
@@ -110,7 +110,7 @@ POLINS  Endogenous   0.592258           0.565175         0.334729  0.565175
 1   IND  POLINS  0.671457       0.0  0.671457
 ```
 
-#### Example 2
+#### Example 2: Different Scaling
 
 PLS-PM using data set `russa`, and different scaling
 
@@ -135,6 +135,35 @@ config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORD), c.MV("labo", Scale.ORD))
 config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo", Scale.NOM), c.MV("inst"))
+
+plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
+```
+
+#### Example 3: Missing Data
+
+```
+#!/usr/bin/env python3
+import pandas as pd, plspm.config as c
+from plspm.plspm import Plspm
+from plspm.scale import Scale
+from plspm.scheme import Scheme
+from plspm.mode import Mode
+
+russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
+russa.iloc[0, 0] = np.NaN
+russa.iloc[3, 3] = np.NaN
+russa.iloc[5, 5] = np.NaN
+lvs = ["AGRI", "IND", "POLINS"]
+rus_path = pd.DataFrame(
+    [[0, 0, 0],
+     [0, 0, 0],
+     [1, 1, 0]],
+    index=lvs,
+    columns=lvs)
+config = c.Config(rus_path, default_scale=Scale.NUM)
+config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
+config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
 
 plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
 ```

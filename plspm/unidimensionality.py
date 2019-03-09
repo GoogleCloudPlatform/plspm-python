@@ -27,26 +27,27 @@ class Unidimensionality:
         self.__correction = correction
 
     def summary(self):
-        summary = pd.DataFrame(0, index=self.__config.lvs(),
+        summary = pd.DataFrame(np.NaN, index=self.__config.lvs(),
                                columns=["mode", "mvs", "cronbach_alpha", "dillon_goldstein_rho", "eig_1st", "eig_2nd"])
         for lv in self.__config.lvs():
             mvs = len(self.__config.mvs(lv))
             summary.loc[lv, "mode"] = self.__config.mode(lv).name
             summary.loc[lv, "mvs"] = mvs
-            mvs_for_lvs = util.treat(self.__data.filter(self.__config.mvs(lv))) * self.__correction
-            pca_input = mvs_for_lvs if mvs_for_lvs.shape[0] > mvs_for_lvs.shape[1] else mvs_for_lvs.transpose()
-            pca = PCA()
-            pca_scores = pca.fit_transform(pca_input)
-            pca_std_dev = np.std(pca_scores, axis=0)
-            summary.loc[lv, "eig_1st"] = pca_std_dev[0] ** 2
-            summary.loc[lv, "eig_2nd"] = pca_std_dev[1] ** 2
-            if (self.__config.mode(lv) == Mode.A):
-                ca_numerator = 2 * np.tril(pca_input.corr(), -1).sum()
-                ca_denominator = pca_input.sum(axis=1).var() / self.__correction ** 2
-                ca = (ca_numerator / ca_denominator) * (mvs / (mvs - 1))
-                summary.loc[lv, "cronbach_alpha"] = ca if ca > 0 else 0
-                corr = np.corrcoef(np.column_stack((pca_input.values, pca_scores[:,0])), rowvar=False)[:,-1][:-1]
-                rho_numerator = sum(corr) ** 2
-                rho_denominator = rho_numerator + (mvs - np.sum(np.power(corr, 2)))
-                summary.loc[lv, "dillon_goldstein_rho"] = rho_numerator / rho_denominator
+            if not self.__data.loc[:,self.__config.mvs(lv)].isnull().values.any():
+                mvs_for_lvs = util.treat(self.__data.filter(self.__config.mvs(lv))) * self.__correction
+                pca_input = mvs_for_lvs if mvs_for_lvs.shape[0] > mvs_for_lvs.shape[1] else mvs_for_lvs.transpose()
+                pca = PCA()
+                pca_scores = pca.fit_transform(pca_input)
+                pca_std_dev = np.std(pca_scores, axis=0)
+                summary.loc[lv, "eig_1st"] = pca_std_dev[0] ** 2
+                summary.loc[lv, "eig_2nd"] = pca_std_dev[1] ** 2
+                if (self.__config.mode(lv) == Mode.A):
+                    ca_numerator = 2 * np.tril(pca_input.corr(), -1).sum()
+                    ca_denominator = pca_input.sum(axis=1).var() / self.__correction ** 2
+                    ca = (ca_numerator / ca_denominator) * (mvs / (mvs - 1))
+                    summary.loc[lv, "cronbach_alpha"] = ca if ca > 0 else 0
+                    corr = np.corrcoef(np.column_stack((pca_input.values, pca_scores[:,0])), rowvar=False)[:,-1][:-1]
+                    rho_numerator = sum(corr) ** 2
+                    rho_denominator = rho_numerator + (mvs - np.sum(np.power(corr, 2)))
+                    summary.loc[lv, "dillon_goldstein_rho"] = rho_numerator / rho_denominator
         return summary
