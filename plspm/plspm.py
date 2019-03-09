@@ -23,10 +23,31 @@ from plspm.bootstrap import Bootstrap
 
 
 class Plspm:
+    """
+    Estimate path models with latent variables using partial least squares algorithm
+
+    Create an instance of this class in order to estimate a path model using the partial least squares algorithm.
+    When the algorithm has performed the calculations to create the estimate, you can then retrieve the inner and outer
+    models, scores, the path coefficients, effects, and reliability indicators such as goodness-of-fit
+    and unidimensionality. Bootstrapping results can also be retrieved if they were requested.
+    """
 
     def __init__(self, data: pd.DataFrame, config: c.Config, scheme: Scheme = Scheme.CENTROID,
                  iterations: int = 100, tolerance: float = 0.000001, bootstrap: bool = False,
                  bootstrap_iterations: int = 100):
+        """
+        Create an instance of the path model calculator.
+
+        Args:
+            data: The dataset to be analyzed
+            config: An instance of plspm.Config
+            scheme: The inner weighting scheme to use: Scheme.CENTROID (default), Scheme.FACTORIAL or Scheme.PATH (see documentation for plspm.scheme)
+            iterations: The maximum number of iterations to try to get the algorithm to converge (default and minimum 100).
+            tolerance: The tolerance criterion for iterations (default 0.000001, must be >0)
+            bootstrap: Whether to perform bootstrap validation
+            bootstrap_iterations: The number of bootstrap samples to use if bootstrap validation is enabled (default and minimum 100)
+        """
+
         if iterations < 100:
             iterations = 100
         assert tolerance > 0
@@ -81,6 +102,6 @@ class Plspm:
         return self.__unidimensionality.summary()
 
     def bootstrap(self):
-        if self.__bootstrap == None:
+        if self.__bootstrap is None:
             raise Exception("To perform bootstrap validation, set the parameter bootstrap to True when calling Plspm")
         return self.__bootstrap
