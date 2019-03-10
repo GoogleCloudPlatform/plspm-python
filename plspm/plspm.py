@@ -141,7 +141,7 @@ class Plspm:
         """
         return self.__inner_model.effects()
 
-    def unidimensionality(self):
+    def unidimensionality(self) -> pd.DataFrame:
         """Gets the results of checking the unidimensionality of blocks (only meaningful for reflective / mode A blocks)
 
         Returns:
@@ -149,7 +149,7 @@ class Plspm:
         """
         return self.__unidimensionality.summary()
 
-    def bootstrap(self):
+    def bootstrap(self) -> Bootstrap:
         """Gets the results of bootstrap validation, if requested
 
         Returns:
