@@ -78,6 +78,14 @@ class _Nominal:
 
 
 class Scale(Enum):
+    """
+    Used to specify the measurement type of a manifest variable when performing calculations with nonmetric data.
+
+    * :attr:`RAW` for numerical variables that require no transformation;
+    * :attr:`NUM` for numerical variables that are suitable for linear transformation;
+    * :attr:`ORD` for ordinal variables that are suitable for monotonic transformation;
+    * :attr:`NOM` for nominal variables that are suitable for non-monotonic transformation.
+    """
     NUM = _Numeric()
     RAW = _Raw()
     ORD = _Ordinal()

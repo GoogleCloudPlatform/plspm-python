@@ -46,6 +46,9 @@ class _PathInnerWeightCalculator:
 
 
 class Scheme(Enum):
+    """
+    The scheme to use to calculate inner weights.
+    """
     CENTROID = _CentroidInnerWeightCalculator()
     PATH = _PathInnerWeightCalculator()
     FACTORIAL = _FactorialInnerWeightCalculator()

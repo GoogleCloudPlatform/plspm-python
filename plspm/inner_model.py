@@ -51,6 +51,7 @@ def _effects(path: pd.DataFrame):
 
 
 class InnerModel:
+    """Internal class that calculates the attributes of the inner model. Use the methods :meth:`~plspm.Plspm.inner_model`, :meth:`~plspm.Plspm.path_coefficients`, and :meth:`~plspm.Plspm.effects` defined on :class:`~.plspm.Plspm` to retrieve the inner model characteristics."""
     def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
         self.__summaries = {}
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
@@ -67,16 +68,21 @@ class InnerModel:
         self.__effects = _effects(self.__path_coefficients)
 
     def path_coefficients(self) -> pd.DataFrame:
+        """Internal method that returns the path coefficients of the inner model."""
         return self.__path_coefficients
 
     def r_squared(self) -> pd.Series:
+        """Internal method that returns r squared for the latent variables."""
         return self.__r_squared
 
     def inner_model(self) -> dict:
+        """Internal method that returns summaries of the characteristics of the inner model for each latent variable."""
         return self.__summaries
 
     def effects(self) -> pd.DataFrame:
+        """Internal method that returns indirect, direct, and total effects for each path in the model."""
         return self.__effects
 
     def endogenous(self) -> list:
+        """Internal method that returns a list of the endogenous latent variables."""
         return self.__endogenous

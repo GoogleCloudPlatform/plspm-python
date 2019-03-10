@@ -19,6 +19,7 @@ import pandas as pd, numpy as np
 
 
 class OuterModel:
+    """Internal class that computes characteristics of the outer model.  Use the methods :meth:`~.plspm.Plspm.outer_model` and :meth:`~.plspm.Plspm.crossloadings` defined on :class:`~.plspm.Plspm` to retrieve the outer model characteristics."""
 
     def __init__(self, data: pd.DataFrame, scores: pd.DataFrame, weights: pd.DataFrame, odm: pd.DataFrame,
                  r_squared: pd.Series):
@@ -33,7 +34,9 @@ class OuterModel:
         self.__outer_model = pd.concat([weights, loading, communality, redundancy], axis=1, sort=True)
 
     def model(self) -> pd.DataFrame:
+        """Internal method that returns the characteristics of the outer model."""
         return self.__outer_model
 
     def crossloadings(self) -> pd.DataFrame:
+        """Internal method that returns the crossloadings between the latent and manifest variables."""
         return self.__crossloadings

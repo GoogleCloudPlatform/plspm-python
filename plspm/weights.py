@@ -24,6 +24,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 
 class _MetricWeights:
+    """Internal class that calculates weights and scores when using metric data."""
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
         weight_factors = correction / data.dot(config.odm()).std(axis=0).values
         self.__mvs = list(config.odm().index)
@@ -67,6 +68,7 @@ class _MetricWeights:
 
 
 class _NonmetricWeights:
+    """Internal class that calculates weights and scores when using nonmetric data."""
     def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
         self.__mv_grouped_by_lv_initial = {}
         self.__mvs = []
@@ -146,6 +148,7 @@ class _NonmetricWeights:
 
 
 class WeightsCalculatorFactory:
+    """Internal class that is used to calculate weights and scores from the data using the model."""
     def __init__(self, config: c.Config, iterations: int, tolerance: float, correction: float, scheme: Scheme):
         self.__iterations = iterations
         self.__tolerance = tolerance
@@ -154,6 +157,7 @@ class WeightsCalculatorFactory:
         self.__scheme = scheme
 
     def calculate(self, data: pd.DataFrame):
+        """Internal method that performs the calculation to estimate weights and scores."""
         if self.__config.metric():
             calculator = _MetricWeights(data, self.__config, self.__correction)
         else:

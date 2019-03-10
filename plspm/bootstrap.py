@@ -30,8 +30,13 @@ def _create_summary(data: pd.DataFrame, original):
 
 
 class Bootstrap:
+    """Performs bootstrap validation to determine the statistical significance of the model.
+
+    Setting ``bootstrap=True`` when constructing :class:`.Plspm` will perform bootstrap validation. Calling :meth:`~.Plspm.bootstrap` on :class:`.Plspm` will return an instance of this class, from which the bootstrapping results can be retrieved by calling the methods listed below.
+    """
     def __init__(self, config: c.Config, data: pd.DataFrame, inner_model: im.InnerModel, outer_model: om.OuterModel,
                  calculator: WeightsCalculatorFactory, iterations: int):
+        """Constructor used internally to kick off bootstrap validation."""
         observations = data.shape[0]
         weights = pd.DataFrame(columns=data.columns)
         r_squared = pd.DataFrame(columns=inner_model.r_squared().index)
@@ -58,17 +63,22 @@ class Bootstrap:
         self.__paths = _create_summary(paths, inner_model.effects().loc[:, "direct"])
         self.__loading = _create_summary(loadings, outer_model.model().loc[:, "loading"])
 
-    def weights(self):
+    def weights(self) -> pd.DataFrame:
+        """Outer weights calculated from bootstrap validation."""
         return self.__weights
 
-    def r_squared(self):
+    def r_squared(self) -> pd.DataFrame:
+        """R squared for latent variables calculated from bootstrap validation."""
         return self.__r_squared
 
-    def total_effects(self):
+    def total_effects(self) -> pd.DataFrame:
+        """Total effects for paths calculated from bootstrap validation."""
         return self.__total_effects
 
-    def paths(self):
+    def paths(self) -> pd.DataFrame:
+        """Direct effects for paths calculated from bootstrap validation."""
         return self.__paths[self.__paths["mean"] != 0]
 
-    def loading(self):
+    def loading(self) -> pd.DataFrame:
+        """Loadings of manifest variables calculated from bootstrap validation."""
         return self.__loading

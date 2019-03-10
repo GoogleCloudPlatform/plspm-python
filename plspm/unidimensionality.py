@@ -21,12 +21,14 @@ from plspm.config import Config
 from plspm.mode import Mode
 
 class Unidimensionality:
+    """Internal class that computes various reliability metrics. Use the method :meth:`~.plspm.Plspm.unidimensionality` defined on :class:`~.plspm.Plspm` to retrieve the results."""
     def __init__(self, config: Config, data: pd.DataFrame, correction: float):
         self.__config = config
         self.__data = data
         self.__correction = correction
 
     def summary(self):
+        """Internal method that performs principal component analysis to compute various reliability metrics."""
         summary = pd.DataFrame(np.NaN, index=self.__config.lvs(),
                                columns=["mode", "mvs", "cronbach_alpha", "dillon_goldstein_rho", "eig_1st", "eig_2nd"])
         for lv in self.__config.lvs():

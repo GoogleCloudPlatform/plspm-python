@@ -38,8 +38,8 @@ class Plspm:
 
         Args:
             data: A Pandas DataFrame containing the dataset to be analyzed
-            config: An instance of plspm.Config
-            scheme: The inner weighting scheme to use: Scheme.CENTROID (default), Scheme.FACTORIAL or Scheme.PATH (see documentation for plspm.scheme)
+            config: An instance of :obj:`.config.Config`
+            scheme: The inner weighting scheme to use: :attr:`.Scheme.CENTROID` (default), :attr:`.Scheme.FACTORIAL` or :attr:`.Scheme.PATH` (see documentation for :mod:`.scheme`)
             iterations: The maximum number of iterations to try to get the algorithm to converge (default and minimum 100).
             tolerance: The tolerance criterion for iterations (default 0.000001, must be >0)
             bootstrap: Whether to perform bootstrap validation (default is not to perform validation)
@@ -96,7 +96,7 @@ class Plspm:
         Gets the inner model for the endogenous latent variables
 
         Returns:
-            a dict with a key for each endogenous latent variable which maps to a DataFrame for its value. The DataFrame for each endogenous latent variable has a row for each latent variable with a path to it, and the following columns: estimate, std error, t, and p>|t|.
+            a dict with a key for each endogenous latent variable which maps to a DataFrame for its value. The DataFrame for each endogenous latent variable has a row for each latent variable with a path to it, and the columns for estimate, std error, t, and p>|t|.
         """
         return self.__inner_model.inner_model()
 
@@ -105,7 +105,7 @@ class Plspm:
         Gets the path coefficient matrix
 
         Returns:
-            a DataFrame of similar form to the Path matrix passed into Config, with the relevant path coefficients in each cell
+            a DataFrame of similar form to the Path matrix passed into :class:`plspm.config.Config`, with the relevant path coefficients in each cell
         """
         return self.__inner_model.path_coefficients()
 
@@ -128,7 +128,8 @@ class Plspm:
     def goodness_of_fit(self) -> float:
         """Gets goodness-of-fit
 
-        Returns: goodness-of-fit
+        Returns:
+            goodness-of-fit
         """
         return self.__inner_summary.goodness_of_fit()
 
@@ -152,7 +153,7 @@ class Plspm:
         """Gets the results of bootstrap validation, if requested
 
         Returns:
-            an instance of the Bootstrap class (see the bootstrap model)
+            an instance of :class:`.bootstrap.Bootstrap` which can be queried for bootstrapping results
 
         Raises:
             Exception: if bootstrap validation was not requested or if there were insufficient (<10) observations

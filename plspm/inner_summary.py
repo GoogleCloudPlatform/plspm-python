@@ -21,6 +21,7 @@ from plspm.mode import Mode
 
 
 class InnerSummary:
+    """Internal class that computes a summary of the inner model.  Use the methods :meth:`~plspm.Plspm.inner_summary` and :meth:`~plspm.Plspm.goodness_of_fit` defined on :class:`~.plspm.Plspm` to retrieve the inner model characteristics."""
 
     def __init__(self, config: Config, r_squared: pd.Series, outer_model: pd.DataFrame):
         path = config.path()
@@ -50,7 +51,9 @@ class InnerSummary:
         self.__goodness_of_fit = np.sqrt(mean_communality * r_squared_aux[r_squared_aux != 0].mean())
 
     def summary(self) -> pd.DataFrame:
+        """Internal method that returns the summary of the inner model."""
         return self.__summary
 
     def goodness_of_fit(self) -> float:
+        """Internal method that returns the goodness-of-fit of the model."""
         return self.__goodness_of_fit

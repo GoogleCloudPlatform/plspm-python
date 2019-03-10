@@ -56,5 +56,8 @@ class _ModeB:
 
 
 class Mode(Enum):
+    """
+    Specify whether a given latent variable is reflective (mode A) or formative (mode B) with respect to its manifest variables.
+    """
     A = _ModeA()
     B = _ModeB()
