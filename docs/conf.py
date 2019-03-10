@@ -186,3 +186,5 @@ extensions = [
     'sphinxcontrib.napoleon',
     'm2r'
 ]
+
+napoleon_include_init_with_doc = True
