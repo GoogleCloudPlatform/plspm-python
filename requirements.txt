@@ -7,3 +7,5 @@ pytest
 setuptools
 wheel
 twine
+sphinxcontrib-napoleon
+sphinx
