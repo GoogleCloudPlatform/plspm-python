@@ -10,7 +10,6 @@ package:
 	python3 -m twine upload dist/*
 
 docs:
-	sphinx-apidoc -o docs/source plspm
 	cd docs && sphinx-build -M html . .
 
 .PHONY: init test docs

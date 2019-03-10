@@ -13,6 +13,10 @@ You can install the latest version of this package using pip:
 
 It's hosted on pypi: https://pypi.org/project/plspm/
 
+## Use
+
+plspm expects to get a Pandas DataFrame containing your data. You start by creating a [Config] object with the details of the model, and then pass it, along with the data and optionally some further configuration, to an instance of [Plspm]. Use the examples below to get started, or browse the API documentation (start with [Config] and [Plspm])
+
 ## Examples
 
 ### PLS-PM with metric data

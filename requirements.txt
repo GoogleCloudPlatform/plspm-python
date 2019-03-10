@@ -9,3 +9,4 @@ wheel
 twine
 sphinxcontrib-napoleon
 sphinx
+m2r

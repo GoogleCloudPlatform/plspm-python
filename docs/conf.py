@@ -28,6 +28,8 @@ version = ''
 # The full version, including alpha/beta/rc tags
 release = '0.4'
 
+from sphinx.ext.apidoc import main
+main(['-e', '-o', 'source', '../plspm'])
 
 # -- General configuration ---------------------------------------------------
 
@@ -50,8 +52,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
@@ -177,4 +178,7 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
-extensions = ['sphinxcontrib.napoleon']
+extensions = [
+    'sphinxcontrib.napoleon',
+    'm2r'
+]
