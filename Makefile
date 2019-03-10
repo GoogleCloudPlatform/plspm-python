@@ -9,7 +9,8 @@ package:
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload dist/*
 
-doc:
-	sphinx-apidoc -f -o docs/source plspm
+docs:
+	sphinx-apidoc -o docs/source plspm
+	cd docs && sphinx-build -M html . .
 
-.PHONY: init test
+.PHONY: init test docs
