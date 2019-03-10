@@ -1,4 +1,4 @@
-# plspm
+# PLSPM: A library implementing Partial Least Squares Path Modeling
 
 _Please note: This is not an officially supported Google product._
 

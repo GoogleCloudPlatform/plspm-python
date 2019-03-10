@@ -19,6 +19,17 @@ import pandas as pd, math, numpy as np
 
 
 def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_values=None) -> pd.DataFrame:
+    """Internal function that treats data in Pandas Dataframe format.
+
+    Args:
+        data: The data to treat
+        center: Whether to center the data
+        scale: Whether to scale the data
+        scale_values: The scaling to use
+
+    Returns:
+        The treated data
+    """
     if center:
         data = data.subtract(data.mean())
     if scale:
@@ -30,15 +41,25 @@ def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_val
 
 
 def treat_numpy(data: np.ndarray) -> np.ndarray:
+    """Internal function that centers and scales data in Numpy format.
+
+    Args:
+        data: The data to treat
+
+    Returns:
+        The treated data
+    """
     data = data - np.nanmean(data)
     return data / np.nanstd(data, axis=0, ddof=1)
 
 
 def sort_cols(data: pd.DataFrame) -> pd.DataFrame:
+    """Internal convenience function to sort data by column."""
     return data.reindex(sorted(data.columns), axis=1)
 
 
 def impute(data: pd.DataFrame) -> pd.DataFrame:
+    """Internal function that imputes missing data using the mean value (only suitable for metric data)."""
     imputed = pd.DataFrame(0, data.index, data.columns)
     for column in list(data):
         average = data[column].mean(skipna=True)
@@ -48,6 +69,7 @@ def impute(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def list_to_dummy(data: dict) -> pd.DataFrame:
+    """Internal function used to create the outer design matrix."""
     matrix = pd.DataFrame()
     for col in data:
         dummy = pd.DataFrame(1, index=data[col], columns=[col])
@@ -56,6 +78,7 @@ def list_to_dummy(data: dict) -> pd.DataFrame:
 
 
 def rank(data: pd.Series) -> pd.Series:
+    """Internal function used to rank ordinal and nominal data."""
     unique = pd.Series(data.unique())
     ranked = unique.rank()
     lookup = pd.concat([unique, ranked], axis=1)
@@ -64,6 +87,7 @@ def rank(data: pd.Series) -> pd.Series:
 
 
 def dummy(data: pd.Series) -> pd.DataFrame:
+    """Internal function used to create a dummy matrix used to perform calculations with ordinal and nominal data"""
     unique = data.unique().size
     dummy = pd.DataFrame(0, data.index, range(1, unique + 1))
     for i in range(unique):
@@ -72,6 +96,7 @@ def dummy(data: pd.Series) -> pd.DataFrame:
 
 
 def groupby_mean(data: np.ndarray) -> np.ndarray:
+    """Internal function which performs the Numpy equivalent of Pandas ``.groupby(...).mean()``"""
     values = {}
     reduced = 0
     for i in range(data.shape[1]):

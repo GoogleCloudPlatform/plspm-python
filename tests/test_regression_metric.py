@@ -49,7 +49,7 @@ def test_plspm_satisfaction():
     npt.assert_allclose(util.sort_cols(expected_scores), util.sort_cols(plspm_calc.scores()))
 
     expected_inner_model = pd.read_csv("file:tests/data/satisfaction.inner-model.csv", index_col=0)
-    actual_inner_model = plspm_calc.inner_model()["SAT"].drop(['const'])
+    actual_inner_model = plspm_calc.inner_model()["SAT"]
     npt.assert_allclose(util.sort_cols(expected_inner_model).sort_index(),
                         util.sort_cols(actual_inner_model).sort_index())
     expected_outer_model = pd.read_csv("file:tests/data/satisfaction.outer-model.csv", index_col=0)

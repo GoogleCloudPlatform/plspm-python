@@ -36,7 +36,6 @@ class Bootstrap:
     """
     def __init__(self, config: c.Config, data: pd.DataFrame, inner_model: im.InnerModel, outer_model: om.OuterModel,
                  calculator: WeightsCalculatorFactory, iterations: int):
-        """Constructor used internally to kick off bootstrap validation."""
         observations = data.shape[0]
         weights = pd.DataFrame(columns=data.columns)
         r_squared = pd.DataFrame(columns=inner_model.r_squared().index)
