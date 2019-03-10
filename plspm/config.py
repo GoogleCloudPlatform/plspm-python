@@ -50,14 +50,14 @@ class Config:
     Create an instance of this class in order to specify the model you want to use :class:`~.plspm.Plspm` to calculate.
     """
     def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale: Scale = None):
-        """Specify the model you want to calculate with :mod:~.plspm.plspm:
+        """Specify the model you want to calculate with :class:`~.plspm.Plspm`:
 
-        Once you have created an instance of this class, add the relevant latent and manifest variables with :meth:`add_lv` or :meth:`add_lv_add_lv_with_columns_named`
+        Once you have created an instance of this class, add the relevant latent and manifest variables with :meth:`add_lv` or :meth:`add_lv_with_columns_named`
 
         Args:
             path: A square lower triangular matrix which specifies the paths between the latent variables (the inner model). The index and columns of this matrix must be the same, and must consist of the names of the latent variables. Cells should contain 1 if the variable in the column affects the variable in the row, 0 otherwise.
             scaled: Whether manifest variables should be standardized. When ``True``, data is scaled to standardized values (mean 0 and variance 1). Only used when ``default_scale`` is set to ``None``.
-            default_scale: If your data is nonmetric, specify a default measurement type. Takes a value from the enum :class:`~plspm.scale.Scale`
+            default_scale: If your data is nonmetric, specify a default measurement type. Takes a value from the enum :class:`~plspm.scale.Scale`, or ``None`` (the default) if the data is metric and does not require scaling.
         """
         self.__modes = {}
         self.__mvs = {}
@@ -88,7 +88,7 @@ class Config:
         return self.__path
 
     def odm(self):
-        """Internal method that returns the outer design matrix showing which manifest variables belong to the latent variables in the model."""
+        """Internal method that returns the outer design matrix showing which manifest variables belong to which latent variables in the model."""
         return util.list_to_dummy(self.__mvs)
 
     def mv_index(self, lv, mv):
