@@ -15,7 +15,7 @@ It's hosted on pypi: https://pypi.org/project/plspm/
 
 ## Use
 
-plspm expects to get a Pandas DataFrame containing your data. You start by creating a [Config](https://plspm.readthedocs.io/en/latest/source/plspm.config.html) object with the details of the model, and then pass it, along with the data and optionally some further configuration, to an instance of [Plspm](https://plspm.readthedocs.io/en/latest/source/plspm.plspm.html). Use the examples below to get started, or browse the [API documentation](https://plspm.readthedocs.io/en/latest/py-modindex.html) (start with [Config](https://plspm.readthedocs.io/en/latest/source/plspm.config.html) and [Plspm](https://plspm.readthedocs.io/en/latest/source/plspm.plspm.html))
+plspm expects to get a Pandas DataFrame containing your data. You start by creating a [Config](https://plspm.readthedocs.io/en/latest/source/plspm.config.html) object with the details of the model, and then pass it, along with the data and optionally some further configuration, to an instance of [Plspm](https://plspm.readthedocs.io/en/latest/source/plspm.plspm.html). Use the examples below to get started, or browse the [documentation](https://plspm.readthedocs.io/) (start with [Config](https://plspm.readthedocs.io/en/latest/source/plspm.config.html) and [Plspm](https://plspm.readthedocs.io/en/latest/source/plspm.plspm.html))
 
 ## Examples
 
