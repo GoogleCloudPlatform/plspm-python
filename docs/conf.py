@@ -28,6 +28,10 @@ version = ''
 # The full version, including alpha/beta/rc tags
 release = '0.4'
 
+autodoc_default_options = {
+    'special-members': '__init__'
+}
+
 from sphinx.ext.apidoc import main
 main(['-e', '-o', 'source', '../plspm'])
 

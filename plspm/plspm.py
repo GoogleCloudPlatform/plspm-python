@@ -25,7 +25,7 @@ from plspm.bootstrap import Bootstrap
 class Plspm:
     """Estimates path models with latent variables using partial least squares algorithm
 
-    Creates an instance of this class in order to estimate a path model using the partial least squares algorithm.
+    Create an instance of this class in order to estimate a path model using the partial least squares algorithm.
     When the algorithm has performed the calculations to create the estimate, you can then retrieve the inner and outer
     models, scores, the path coefficients, effects, and reliability indicators such as goodness-of-fit
     and unidimensionality. Bootstrapping results can also be retrieved if they were requested.
@@ -37,7 +37,7 @@ class Plspm:
         """Creates an instance of the path model calculator.
 
         Args:
-            data: The dataset to be analyzed
+            data: A Pandas DataFrame containing the dataset to be analyzed
             config: An instance of plspm.Config
             scheme: The inner weighting scheme to use: Scheme.CENTROID (default), Scheme.FACTORIAL or Scheme.PATH (see documentation for plspm.scheme)
             iterations: The maximum number of iterations to try to get the algorithm to converge (default and minimum 100).
