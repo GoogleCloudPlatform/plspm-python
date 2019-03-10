@@ -50,7 +50,7 @@ class Config:
     Create an instance of this class in order to specify the model you want to use :class:`~.plspm.Plspm` to calculate.
     """
     def __init__(self, path: pd.DataFrame, scaled: bool = True, default_scale: Scale = None):
-        """Specify the model you want to calculate with :mod:~plspm.plspm:
+        """Specify the model you want to calculate with :mod:~.plspm.plspm:
 
         Once you have created an instance of this class, add the relevant latent and manifest variables with :meth:`add_lv` or :meth:`add_lv_add_lv_with_columns_named`
 
