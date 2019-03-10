@@ -63,7 +63,7 @@ class InnerModel:
             regression = sm.OLS(scores.loc[:, dv], exogenous).fit()
             self.__path_coefficients.loc[dv, ivs] = regression.params
             self.__r_squared.loc[dv] = regression.rsquared
-            self.__summaries[dv] = _summary(regression)
+            self.__summaries[dv] = _summary(regression).drop("const")
         self.__effects = _effects(self.__path_coefficients)
 
     def path_coefficients(self) -> pd.DataFrame:
