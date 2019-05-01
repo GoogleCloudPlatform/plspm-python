@@ -4,6 +4,10 @@ _Please note: This is not an officially supported Google product._
 
 **plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a port of the R package [plspm](https://github.com/gastonstat/plspm).
 
+PLSPM (partial least squares path modeling) is a correlation-based structural equation modeling (SEM) algorithm. It allows for estimation of complex cause-effect or prediction models using latent/manifest variables. 
+
+PLSPM may be preferred to other SEM methods for several reasons: it is a method that is appropriate for exploratory research, can be used with small-to-medium sample sizes (as well as large data sets), and does not require assumptions of multivariate normality. (See Hulland, J. (1999). Use of partial least squares (PLS) in strategic management research: a review of four recent studies. Strategic management journal, 20(2), 195-204.) In contrast to covariance-based SEM (CBSEM), goodness of fit is less important, because the purpose of the algorithm is to optimize for prediction of the dependent variable vs. fit of data to a predetermined model. (See "goodness of fit" vs "goodness of model" in Chin, W. W. (2010). How to write up and report PLS analyses. In Handbook of partial least squares (pp. 655-690). Springer, Berlin, Heidelberg.)
+
 This library will calculate using modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. Bootstrap validation is available, and reliability measures are also calculated using the same methods as the original R library.
 
 ## Installation
