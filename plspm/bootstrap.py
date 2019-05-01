@@ -56,7 +56,7 @@ class Bootstrap:
                     (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm()).sum(axis=1), ignore_index=True)
             except:
                 pass
-        self.__weights = _create_summary(weights, outer_model.model().loc[:, "weights"])
+        self.__weights = _create_summary(weights, outer_model.model().loc[:, "weight"])
         self.__r_squared = _create_summary(r_squared, inner_model.r_squared()).loc[inner_model.endogenous(), :]
         self.__total_effects = _create_summary(total_effects, inner_model.effects().loc[:, "total"])
         self.__paths = _create_summary(paths, inner_model.effects().loc[:, "direct"])

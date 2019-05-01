@@ -52,9 +52,10 @@ def test_plspm_satisfaction():
     actual_inner_model = plspm_calc.inner_model()["SAT"]
     npt.assert_allclose(util.sort_cols(expected_inner_model).sort_index(),
                         util.sort_cols(actual_inner_model).sort_index())
-    expected_outer_model = pd.read_csv("file:tests/data/satisfaction.outer-model.csv", index_col=0)
+    expected_outer_model = pd.read_csv("file:tests/data/satisfaction.outer-model.csv", index_col=0).drop(["block"], axis=1)
+    pt.assert_index_equal(expected_outer_model.columns, plspm_calc.outer_model().columns)
     npt.assert_allclose(
-        util.sort_cols(expected_outer_model.drop(["block"], axis=1)).sort_index(),
+        util.sort_cols(expected_outer_model.sort_index()),
         util.sort_cols(plspm_calc.outer_model()).sort_index())
 
     expected_crossloadings = pd.read_csv("file:tests/data/satisfaction.crossloadings.csv", index_col=0)

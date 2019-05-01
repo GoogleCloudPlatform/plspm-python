@@ -64,7 +64,7 @@ class _MetricWeights:
         if -1 in w_sign.tolist():
             w_sign = [-1 if 0 else x for x in w_sign]
             y = y.dot(np.diag(w_sign), index=self.__mvs, columns=self.__config.lvs())
-        return self.__data, y, pd.DataFrame(weights.sum(axis=1), index=self.__mvs, columns=["weights"])
+        return self.__data, y, pd.DataFrame(weights.sum(axis=1), index=self.__mvs, columns=["weight"])
 
 
 class _NonmetricWeights:
