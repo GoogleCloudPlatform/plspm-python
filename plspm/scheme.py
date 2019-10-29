@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import statsmodels.formula.api as sm, numpy as np, pandas as pd
+import statsmodels.api as sm, numpy as np, pandas as pd
 from enum import Enum
 
 
