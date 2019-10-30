@@ -34,9 +34,9 @@ def russa_path_matrix():
 def test_plspm_russa():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
+    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
     config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
-    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
 
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_scores = pd.read_csv("file:tests/data/russa.scores.csv", index_col=0)
@@ -83,8 +83,8 @@ def test_plspm_russa_mode_b():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
     config.add_lv("AGRI", Mode.B, c.MV("gini"), c.MV("farm"), c.MV("rent"))
-    config.add_lv("IND", Mode.B, c.MV("gnpr"), c.MV("labo"))
     config.add_lv("POLINS", Mode.B, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
+    config.add_lv("IND", Mode.B, c.MV("gnpr"), c.MV("labo"))
 
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.mode_b_inner_summary.csv", index_col=0)
@@ -96,9 +96,9 @@ def test_plspm_russa_mode_b():
 def test_plspm_russa_categorical():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
-    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
     config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORD), c.MV("labo", Scale.ORD))
     config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo", Scale.NOM), c.MV("inst"))
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.categorical.inner_summary.csv", index_col=0)

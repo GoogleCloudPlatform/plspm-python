@@ -101,7 +101,7 @@ class Config:
 
     def lvs(self):
         """Internal method that returns a list of the latent variables in the model."""
-        return self.__mvs.keys()
+        return list(self.path())
 
     def mode(self, lv: str):
         """Internal method that returns the mode of a given latent variable."""
@@ -172,6 +172,10 @@ class Config:
         Raises:
             ValueError: if the dataset is missing any columns with names that were specified as manifest variables in the model, or if there are any non-numeric values in the dataset.
         """
+        if (set(self.__mvs.keys()) != set(self.path())):
+            raise ValueError(
+                "The Path matrix supplied does not specify the same latent variables as you added when configuring manifest variables." +
+                " Path: " + ",".join(set(self.path())) + " LVs: " + ",".join(set(self.__mvs.keys())))
         if not set(self.__mv_scales.keys()).issubset(set(data)):
             raise ValueError(
                 "The following manifest variables you configured are not present in the data set: " + ", ".join(

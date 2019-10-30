@@ -19,8 +19,6 @@ import pandas as pd, pytest, numpy.testing as npt, plspm.config as c
 from plspm.scale import Scale
 from plspm.mode import Mode
 
-
-
 def config_test_path_matrix():
     lvs = ["AGRI", "IND", "POLINS"]
     return pd.DataFrame(
@@ -48,10 +46,19 @@ def test_config_rejects_bad_path_matrix():
         c.Config(pd.DataFrame([[1, 0], [1, 1]], index=["A", "B"], columns=["C", "D"]))
 
 
-def test_config_rejects_path_and_lv_config_not_matching():
+def test_config_rejects_adding_lv_not_present_in_path():
     config = c.Config(config_test_path_matrix())
     with pytest.raises(ValueError):
         config.add_lv("POO", Mode.A, c.MV("test"))
+
+
+def test_config_rejects_path_and_lv_config_not_matching():
+    config = c.Config(config_test_path_matrix())
+    config.add_lv("AGRI", Mode.A, c.MV("gini"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"))
+    russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
+    with pytest.raises(ValueError):
+        config.filter(russa)
 
 
 def test_config_returns_correct_mode_and_mvs():
@@ -71,7 +78,9 @@ def test_config_rejects_missing_mvs():
 def test_config_filters_mvs():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix())
+    config.add_lv("POLINS", Mode.A)
     config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.A)
     npt.assert_array_equal(list(config.filter(russa)), ["gini", "farm", "rent"])
 
 def test_data_should_only_contain_numerical_values():
@@ -85,21 +94,27 @@ def test_data_should_only_contain_numerical_values():
 def test_all_mvs_should_have_a_scale_if_data_is_nonmetric():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix())
+    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
     config.add_lv("AGRI", Mode.A, c.MV("gini", Scale.NUM), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
     with pytest.raises(TypeError):
         config.treat(config.filter(russa))
 
 def test_scaling_should_be_false_if_all_raw():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix(), default_scale=Scale.RAW)
+    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
     config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
     config.treat(config.filter(russa))
     assert not config.scaled()
 
 def test_scaling_should_be_true_and_all_scales_set_to_num_if_only_raw_and_num_supplied():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix(), default_scale=Scale.RAW)
-    config.add_lv("AGRI", Mode.A, c.MV("gini", Scale.NUM), c.MV("farm"), c.MV("rent"))
+    config.add_lv("POLINS", Mode.A, c.MV("ecks", Scale.NUM), c.MV("death"), c.MV("demo"), c.MV("inst"))
+    config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
     config.treat(config.filter(russa))
     assert config.scaled()
     for mv in ["gini", "farm", "rent"]:
@@ -109,6 +124,8 @@ def test_scales_should_remain_unchanged_if_values_other_than_num_and_raw_supplie
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
     config = c.Config(config_test_path_matrix(), default_scale=Scale.RAW, scaled=False)
     config.add_lv("AGRI", Mode.A, c.MV("gini", Scale.NUM), c.MV("farm", Scale.ORD), c.MV("rent"))
+    config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
+    config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
     config.filter(russa)
     assert not config.scaled()
     assert config.scale("farm") == Scale.ORD
