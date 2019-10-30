@@ -22,8 +22,8 @@ from typing import Tuple
 
 class _ModeA:
 
-    def outer_weights_metric(self, data: pd.DataFrame, Z: np.ndarray, lv: str, mvs: list) -> np.ndarray:
-        return (1 / data.shape[0]) * np.transpose(np.dot(np.transpose(Z), data.loc[:, mvs]))
+    def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list) -> pd.DataFrame:
+        return (1 / data.shape[0]) * Z.loc[:, [lv]].T.dot(data.loc[:, mvs]).T
 
     def outer_weights_nonmetric(self, mv_grouped_by_lv: list, mv_grouped_by_lv_missing: list, Z: np.ndarray, lv: str,
                                 correction: float) -> Tuple[np.ndarray, np.ndarray]:
@@ -32,7 +32,7 @@ class _ModeA:
             weights = weights / np.sum(np.power(mv_grouped_by_lv_missing[lv] * Z[:, np.newaxis], 2), axis=0)
             Y = np.nansum(np.transpose(mv_grouped_by_lv[lv]) * weights[:, np.newaxis], axis=0)
             Y = Y / np.sum(np.power(np.transpose(mv_grouped_by_lv_missing[lv]) * weights[:, np.newaxis], 2), axis=0)
-        else:
+        else:   
             weights = np.dot(np.transpose(mv_grouped_by_lv[lv]), Z) / np.power(Z, 2).sum()
             Y = np.dot(mv_grouped_by_lv[lv], weights)
         Y = util.treat_numpy(Y) * correction
@@ -41,9 +41,9 @@ class _ModeA:
 
 class _ModeB:
 
-    def outer_weights_metric(self, data: pd.DataFrame, Z: np.ndarray, lv: str, mvs: list) -> np.ndarray:
-        w, _, _, _ = linalg.lstsq(data.loc[:, mvs], Z)
-        return w
+    def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list) -> pd.DataFrame:
+        w, _, _, _ = linalg.lstsq(data.loc[:, mvs], Z.loc[:, [lv]])
+        return pd.DataFrame(w, columns=[lv], index=mvs)
 
     def outer_weights_nonmetric(self, mv_grouped_by_lv: list, mv_grouped_by_lv_missing: list, Z: pd.DataFrame, lv: str,
                                 correction: float) -> Tuple[np.ndarray, np.ndarray]:

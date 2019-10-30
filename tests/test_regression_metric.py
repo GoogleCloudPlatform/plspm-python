@@ -39,8 +39,8 @@ def test_plspm_satisfaction():
     config = c.Config(satisfaction_path_matrix(), scaled=False)
     config.add_lv_with_columns_named("IMAG", Mode.A, satisfaction, "imag")
     config.add_lv_with_columns_named("EXPE", Mode.A, satisfaction, "expe")
-    config.add_lv_with_columns_named("QUAL", Mode.A, satisfaction, "qual")
     config.add_lv_with_columns_named("VAL", Mode.A, satisfaction, "val")
+    config.add_lv_with_columns_named("QUAL", Mode.A, satisfaction, "qual")
     config.add_lv_with_columns_named("SAT", Mode.A, satisfaction, "sat")
     config.add_lv_with_columns_named("LOY", Mode.A, satisfaction, "loy")
 
@@ -99,12 +99,12 @@ def test_plspm_satisfaction():
 def test_plspm_russa_mode_b():
     satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
     config = c.Config(satisfaction_path_matrix(), scaled=False)
-    config.add_lv_with_columns_named("IMAG", Mode.B, satisfaction, "imag")
-    config.add_lv_with_columns_named("EXPE", Mode.B, satisfaction, "expe")
     config.add_lv_with_columns_named("QUAL", Mode.B, satisfaction, "qual")
     config.add_lv_with_columns_named("VAL", Mode.B, satisfaction, "val")
     config.add_lv_with_columns_named("SAT", Mode.B, satisfaction, "sat")
     config.add_lv_with_columns_named("LOY", Mode.B, satisfaction, "loy")
+    config.add_lv_with_columns_named("IMAG", Mode.B, satisfaction, "imag")
+    config.add_lv_with_columns_named("EXPE", Mode.B, satisfaction, "expe")
 
     plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
     expected_inner_summary = pd.read_csv("file:tests/data/satisfaction.modeb.inner-summary.csv", index_col=0)
