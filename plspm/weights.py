@@ -87,6 +87,8 @@ class _NonmetricWeights:
                 for j in range(len(data.index)):
                     numerator = np.nansum(mv_grouped_by_lv[lv][j, :] * weight)
                     denominator = np.power(weight * self.__mv_grouped_by_lv_missing[lv][j, :], 2).sum()
+                    if denominator == 0:
+                        raise ValueError("All mvs for lv " + lv + " in row " + str(j) + " are NaN.")
                     y[j, i] = numerator / denominator
             else:
                 y[:, i] = np.dot(mv_grouped_by_lv[lv], weight)

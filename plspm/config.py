@@ -161,7 +161,7 @@ class Config:
         self.add_lv(lv_name, mode, *mvs)
 
     def filter(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Internal method that removes columns from the dataset that are not specified in the model.
+        """Internal method that removes columns from the dataset that are not specified in the model, and rows where all MVs for an LV are unknown.
 
         Args:
             data: The dataset to filter
@@ -185,6 +185,17 @@ class Config:
             raise ValueError(
                 "Data must only contain numeric values. Please convert any categorical data into numerical values.")
         self.__missing = data.isnull().values.any()
+        # Delete any rows which has all MVs for an LV as NaN
+        if self.__missing:
+            mv_grouped_by_lv = {}
+            rows_to_delete = set()
+            for i, lv in enumerate(self.lvs()):
+                mvs = self.mvs(lv)
+                mv_grouped_by_lv[lv] = data.filter(mvs).values.astype(np.float64)
+                for j in range(len(data.index)):
+                    if np.count_nonzero(~np.isnan(mv_grouped_by_lv[lv][j, :])) == 0:
+                        rows_to_delete.add(j)
+            data = data.drop(data.index[list(rows_to_delete)])
         return data
 
     def treat(self, data: pd.DataFrame) -> pd.DataFrame:
