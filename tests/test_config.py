@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, pytest, numpy.testing as npt, plspm.config as c
+import pandas as pd, pytest, numpy.testing as npt, plspm.config as c, pandas.testing as pt
 from plspm.scale import Scale
 from plspm.mode import Mode
+
 
 def config_test_path_matrix():
     lvs = ["AGRI", "IND", "POLINS"]
@@ -129,3 +130,18 @@ def test_scales_should_remain_unchanged_if_values_other_than_num_and_raw_supplie
     config.filter(russa)
     assert not config.scaled()
     assert config.scale("farm") == Scale.ORD
+
+
+def test_create_path_from_structure():
+    lvs = ["MANDRILL", "BONOBO", "APE", "GOAT", "CATFISH"]
+    expected = pd.DataFrame(
+        [[0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0],
+         [1, 1, 0, 0, 0],
+         [0, 0, 1, 0, 0],
+         [0, 0, 1, 0, 0]],
+        index=lvs, columns=lvs)
+    structure = c.Structure()
+    structure.addPath(source=["BONOBO", "MANDRILL"], target=["APE"]);
+    structure.addPath(source=["APE"], target=["CATFISH", "GOAT"]);
+    pt.assert_frame_equal(expected, structure.path())

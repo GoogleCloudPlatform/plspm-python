@@ -15,10 +15,50 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util
+import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util, itertools as it, collections as c
 from plspm.mode import Mode
 from plspm.scale import Scale
 
+
+class Structure:
+    """Specify relationships betweeen constructs
+
+
+    Use this class to specify the relationships between constructs. It will generate a path matrix suitable for using in :class:`~.plspm.Config`.
+    """
+    def __init__(self):
+        self.__paths = []
+        self.__constructs = c.Counter()
+
+    def addPath(self, source: list, target: list):
+        """Specify a relationship between two sets of constructs.
+
+        Args:
+            source: A list of antecedent constructs
+            target: A list of outcome constructs
+        """
+        if len(source) != 1 and len(target) != 1:
+            raise ValueError("Either source or target must be a list containing a single entry")
+        if len(source) == 0 or len(target) == 0:
+            raise ValueError("Both source and target must contain at least one entry")
+        for element in it.product(source, target):
+            print(element)
+            self.__paths.append(element)
+            self.__constructs[element[0]] -= 1
+            self.__constructs[element[1]] += 1
+
+    def path(self):
+        """Get a path matrix for use in :class:`~plspm.Config`.
+        """
+        dests = self.__constructs.most_common()
+        print(dests)
+        index = [dest[0] for dest in dests]
+        index.reverse()
+        path = pd.DataFrame(np.zeros((len(index), len(index)), int), columns=index, index=index)
+        for source, target in self.__paths:
+            path.at[target, source] = 1
+        print(path)
+        return path
 
 class MV:
     """Specify a manifest variable to use in the model.
