@@ -20,12 +20,13 @@ from plspm.weights import WeightsCalculatorFactory
 
 
 def _create_summary(data: pd.DataFrame, original):
-    summary = pd.DataFrame(0, index=data.columns, columns=["original", "mean", "std.error", "perc.025", "perc.975"])
+    summary = pd.DataFrame(0, index=data.columns, columns=["original", "mean", "std.error", "perc.025", "perc.975", "t stat."])
     summary.loc[:, "mean"] = data.mean(axis=0)
     summary.loc[:, "std.error"] = data.std(axis=0)
     summary.loc[:, "perc.025"] = data.quantile(0.025, axis=0)
     summary.loc[:, "perc.975"] = data.quantile(0.975, axis=0)
     summary.loc[:, "original"] = original
+    summary.loc[:, "t stat."] = original / data.std(axis=0)
     return summary
 
 

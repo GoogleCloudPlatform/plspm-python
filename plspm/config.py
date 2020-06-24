@@ -158,6 +158,8 @@ class Config:
         """
         names = filter(lambda x: x.startswith(col_name_starts_with), list(data))
         mvs = list(map(lambda mv: MV(mv, default_scale), names))
+        if len(mvs) == 0:
+            raise ValueError("No columns were found in the data starting with " + col_name_starts_with)
         self.add_lv(lv_name, mode, *mvs)
 
     def filter(self, data: pd.DataFrame) -> pd.DataFrame:
