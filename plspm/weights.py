@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import Tuple
 
-import numpy as np, pandas as pd, plspm.config as c, statsmodels.api as sm, plspm.util as util
+import numpy as np, pandas as pd, plspm.config as c, statsmodels.api as sm, plspm.util as util, math
 from plspm.scheme import Scheme
 from plspm.mode import Mode
 
@@ -59,10 +59,12 @@ class _MetricWeights:
         y = self.__data.dot(weights)
         cor = pd.concat([self.__data, y], axis=1).corr().loc[list(self.__data), list(y)]
         odm = weights.apply(lambda x: x!= 0).astype(int)
-        w_sign = np.sign(np.sign(cor * odm).sum(axis=0))
-        if -1 in w_sign.tolist():
-            w_sign = [-1 if 0 else x for x in w_sign]
-            y = y.dot(np.diag(w_sign), index=self.__mvs, columns=self.__config.lvs())
+        sign = lambda x : math.copysign(1.0, x)
+        w_sign = (cor * odm).applymap(sign).sum(axis=0).apply(sign)
+        if -1 in w_sign.values:
+            w_sign = w_sign.apply(lambda x : -1 if x == 0 else x)
+            w_sign_matrix = pd.DataFrame(np.diag(w_sign), index=w_sign.index, columns=w_sign.index)
+            y = y.dot(w_sign_matrix)
         weights = pd.DataFrame(weights.sum(axis=1), index=self.__mvs, columns=["weight"])
         return self.__data, y, weights
 
