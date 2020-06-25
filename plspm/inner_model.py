@@ -55,15 +55,19 @@ class InnerModel:
     def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
         self.__summaries = {}
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
+        self.__r_squared_adj = pd.Series(0, index=path.index, name="r_squared_adj")
         self.__path_coefficients = pd.DataFrame(0, columns=path.columns, index=path.index)
         endogenous = path.sum(axis=1).astype(bool)
         self.__endogenous = list(endogenous[endogenous == True].index)
+        rows = scores.shape[0]
         for dv in self.__endogenous:
             ivs = path.loc[dv,][path.loc[dv,] == 1].index
             exogenous = sm.add_constant(scores.loc[:, ivs])
             regression = sm.OLS(scores.loc[:, dv], exogenous).fit()
             self.__path_coefficients.loc[dv, ivs] = regression.params
-            self.__r_squared.loc[dv] = regression.rsquared
+            rsquared = regression.rsquared
+            self.__r_squared.loc[dv] = rsquared
+            self.__r_squared_adj.loc[dv] = 1 - (1 - rsquared) * (rows - 1) / (rows - path.loc[dv].sum() - 1)
             self.__summaries[dv] = _summary(regression).drop("const")
         self.__effects = _effects(self.__path_coefficients)
 
@@ -74,6 +78,10 @@ class InnerModel:
     def r_squared(self) -> pd.Series:
         """Internal method that returns r squared for the latent variables."""
         return self.__r_squared
+
+    def r_squared_adj(self) -> pd.Series:
+        """Internal method that returns adjusted r squared for the latent variables."""
+        return self.__r_squared_adj
 
     def inner_model(self) -> dict:
         """Internal method that returns summaries of the characteristics of the inner model for each latent variable."""

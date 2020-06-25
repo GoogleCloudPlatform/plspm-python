@@ -65,7 +65,8 @@ class Plspm:
 
         self.__inner_model = im.InnerModel(config.path(), scores)
         self.__outer_model = om.OuterModel(final_data, scores, weights, config.odm(), self.__inner_model.r_squared())
-        self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(), self.__outer_model.model())
+        self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(),
+                                                self.__inner_model.r_squared_adj(), self.__outer_model.model())
         self.__unidimensionality = Unidimensionality(config, data_untreated, correction)
         self.__scores = scores
         self.__bootstrap = None
