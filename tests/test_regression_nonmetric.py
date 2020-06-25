@@ -54,7 +54,7 @@ def test_plspm_russa():
 
     expected_inner_summary = pd.read_csv("file:tests/data/russa.inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
@@ -85,7 +85,7 @@ def test_plspm_russa_mode_b():
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.mode_b_inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
@@ -99,7 +99,7 @@ def test_plspm_russa_categorical():
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.categorical.inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
@@ -113,7 +113,7 @@ def test_plspm_russa_categorical_mode_b():
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.categorical.mode_b.inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
@@ -130,7 +130,7 @@ def test_plspm_russa_missing_data():
     plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
     expected_inner_summary = pd.read_csv("file:tests/data/russa.missing.inner_summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
     assert plspm_calc.unidimensionality().drop(["mode", "mvs"], axis=1).isnull().values.all()

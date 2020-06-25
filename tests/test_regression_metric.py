@@ -61,7 +61,7 @@ def test_plspm_satisfaction():
     expected_inner_summary = pd.read_csv("file:tests/data/satisfaction.inner-summary.csv", index_col=0)
 
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
 
@@ -105,6 +105,6 @@ def test_plspm_russa_mode_b():
     plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
     expected_inner_summary = pd.read_csv("file:tests/data/satisfaction.modeb.inner-summary.csv", index_col=0)
     npt.assert_allclose(util.sort_cols(expected_inner_summary.drop(["type"], axis=1)).sort_index(),
-                        util.sort_cols(plspm_calc.inner_summary().drop(["type"], axis=1)).sort_index())
+                        util.sort_cols(plspm_calc.inner_summary().drop(["type", "r_squared_adj"], axis=1)).sort_index())
     pt.assert_series_equal(expected_inner_summary.loc[:, "type"].sort_index(),
                            plspm_calc.inner_summary().loc[:, "type"].sort_index())
