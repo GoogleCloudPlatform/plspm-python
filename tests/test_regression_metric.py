@@ -20,6 +20,15 @@ from plspm.plspm import Plspm
 from plspm.scheme import Scheme
 from plspm.mode import Mode
 
+def satisfaction_path_matrix_new():
+    structure = c.Structure()
+    structure.addPath(["IMAGE"], ["EXPE", "SAT", "LOY"])
+    structure.addPath(["EXPE"], ["QUAL", "VAL", "SAT"])
+    structure.addPath(["QUAL"], ["VAL", "SAT"])
+    structure.addPath(["VAL"], ["SAT"])
+    structure.addPath(["SAT"], ["LOY"])
+    return structure.path()
+
 
 def satisfaction_path_matrix():
     lvs = ["IMAG", "EXPE", "QUAL", "VAL", "SAT", "LOY"]
