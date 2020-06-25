@@ -119,7 +119,7 @@ class TopoSort:
         self.__indegree = c.Counter()
         self.__children = {}
         self.__edges = []
-    
+
     def append(self, src: str, dest: str):
         self.__edges.append((src, dest))
         self.__indegree[dest] += 1
@@ -143,7 +143,6 @@ class TopoSort:
             if self.__indegree[v] != 0:
                 raise ValueError("Structural graph contains cycles.")
         return ordered
-        
 
     def elements(self):
         return self.__edges
