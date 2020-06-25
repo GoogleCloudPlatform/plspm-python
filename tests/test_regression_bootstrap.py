@@ -6,11 +6,11 @@ from plspm.mode import Mode
 
 def satisfaction_path_matrix():
     structure = c.Structure()
-    structure.addPath(["IMAG"], ["EXPE", "SAT", "LOY"])
-    structure.addPath(["EXPE"], ["QUAL", "VAL", "SAT"])
-    structure.addPath(["QUAL"], ["VAL", "SAT"])
-    structure.addPath(["VAL"], ["SAT"])
-    structure.addPath(["SAT"], ["LOY"])
+    structure.add_path(["IMAG"], ["EXPE", "SAT", "LOY"])
+    structure.add_path(["EXPE"], ["QUAL", "VAL", "SAT"])
+    structure.add_path(["QUAL"], ["VAL", "SAT"])
+    structure.add_path(["VAL"], ["SAT"])
+    structure.add_path(["SAT"], ["LOY"])
     return structure.path()
 
 

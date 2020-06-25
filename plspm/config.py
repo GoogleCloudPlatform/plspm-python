@@ -30,7 +30,7 @@ class Structure:
     def __init__(self):
         self.__toposort = TopoSort()
 
-    def addPath(self, source: list, target: list):
+    def add_path(self, source: list, target: list):
         """Specify a relationship between two sets of constructs.
 
         Args:

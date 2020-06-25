@@ -24,7 +24,7 @@ from plspm.mode import Mode
 
 def russa_path_matrix():
     structure = c.Structure()
-    structure.addPath(["AGRI", "IND"], ["POLINS"])
+    structure.add_path(["AGRI", "IND"], ["POLINS"])
     return structure.path()
 
 def test_plspm_russa():

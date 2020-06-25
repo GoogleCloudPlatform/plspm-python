@@ -39,11 +39,11 @@ from plspm.mode import Mode
 satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
 
 structure = c.Structure()
-structure.addPath(["IMAG"], ["EXPE", "SAT", "LOY"])
-structure.addPath(["EXPE"], ["QUAL", "VAL", "SAT"])
-structure.addPath(["QUAL"], ["VAL", "SAT"])
-structure.addPath(["VAL"], ["SAT"])
-structure.addPath(["SAT"], ["LOY"])
+structure.add_path(["IMAG"], ["EXPE", "SAT", "LOY"])
+structure.add_path(["EXPE"], ["QUAL", "VAL", "SAT"])
+structure.add_path(["QUAL"], ["VAL", "SAT"])
+structure.add_path(["VAL"], ["SAT"])
+structure.add_path(["SAT"], ["LOY"])
 
 config = c.Config(structure.path(), scaled=False)
 config.add_lv_with_columns_named("IMAG", Mode.A, satisfaction, "imag")
@@ -52,6 +52,7 @@ config.add_lv_with_columns_named("QUAL", Mode.A, satisfaction, "qual")
 config.add_lv_with_columns_named("VAL", Mode.A, satisfaction, "val")
 config.add_lv_with_columns_named("SAT", Mode.A, satisfaction, "sat")
 config.add_lv_with_columns_named("LOY", Mode.A, satisfaction, "loy")
+
 plspm_calc = Plspm(satisfaction, config, Scheme.CENTROID)
 print(plspm_calc.inner_summary())
 print(plspm_calc.path_coefficients())
@@ -91,14 +92,14 @@ from plspm.mode import Mode
 russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
 
 structure = c.Structure()
-structure.addPath(["AGRI", "IND"], ["POLINS"])
+structure.add_path(["AGRI", "IND"], ["POLINS"])
+
 config = c.Config(structure.path(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
 config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
 
 plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
-
 print(plspm_calc.inner_summary())
 print(plspm_calc.effects())
 ```
@@ -130,7 +131,7 @@ from plspm.mode import Mode
 russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
 
 structure = c.Structure()
-structure.addPath(["AGRI", "IND"], ["POLINS"])
+structure.add_path(["AGRI", "IND"], ["POLINS"])
 config = c.Config(structure.path(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORD), c.MV("labo", Scale.ORD))
@@ -155,7 +156,7 @@ russa.iloc[3, 3] = np.NaN
 russa.iloc[5, 5] = np.NaN
 
 structure = c.Structure()
-structure.addPath(["AGRI", "IND"], ["POLINS"])
+structure.add_path(["AGRI", "IND"], ["POLINS"])
 config = c.Config(structure.path(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))

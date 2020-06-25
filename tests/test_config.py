@@ -142,6 +142,6 @@ def test_create_path_from_structure():
          [0, 0, 1, 0, 0]],
         index=lvs, columns=lvs)
     structure = c.Structure()
-    structure.addPath(source=["BONOBO", "MANDRILL"], target=["APE"]);
-    structure.addPath(source=["APE"], target=["CATFISH", "GOAT"]);
+    structure.add_path(source=["BONOBO", "MANDRILL"], target=["APE"]);
+    structure.add_path(source=["APE"], target=["CATFISH", "GOAT"]);
     pt.assert_frame_equal(expected, structure.path())
