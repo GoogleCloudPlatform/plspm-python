@@ -1,4 +1,4 @@
-# PLSPM: A library implementing Partial Least Squares Path Modeling
+# PLSPM: A library implementing Partial Least Squares Path Modeling [![PyPI version](https://badge.fury.io/py/plspm.svg)](https://badge.fury.io/py/plspm)
 
 _Please note: This is not an officially supported Google product._
 
@@ -13,7 +13,9 @@ This library will calculate using modes A (for reflective relationships) and B (
 ## Installation
 You can install the latest version of this package using pip:
 
-`python3 -m pip install --user plspm`
+```sh
+python3 -m pip install --user plspm`
+```
 
 It's hosted on pypi: https://pypi.org/project/plspm/
 
@@ -27,7 +29,7 @@ plspm expects to get a Pandas DataFrame containing your data. You start by creat
 
 Typical example with a Customer Satisfaction Model
 
-```
+```py
 #!/usr/bin/env python3
 import pandas as pd, plspm.config as c
 from plspm.plspm import Plspm
@@ -78,7 +80,7 @@ LOY   0.275150  0.000000  0.000000  0.000000  0.495479    0
 
 Example with the classic Russett data (original data set)
 
-```
+```py
 #!/usr/bin/env python3
 import pandas as pd, plspm.config as c
 from plspm.plspm import Plspm
@@ -117,7 +119,7 @@ POLINS  Endogenous   0.592258           0.565175         0.334729  0.565175
 
 PLS-PM using data set `russa`, and different scaling
 
-```
+```py
 #!/usr/bin/python3
 import pandas as pd, plspm.config as c, plspm.util as util
 from plspm.plspm import Plspm
@@ -139,7 +141,7 @@ plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
 
 #### Example 3: Missing Data
 
-```
+```py
 #!/usr/bin/env python3
 import pandas as pd, plspm.config as c
 from plspm.plspm import Plspm
@@ -166,6 +168,6 @@ plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
 
 [Jez Humble](https://continuousdelivery.com/)
   (`humble at google.com`)
-  
+
 [Nicole Forsgren](https://nicolefv.com/)
   (`nicolefv at google.com`)
