@@ -14,7 +14,7 @@ This library will calculate using modes A (for reflective relationships) and B (
 You can install the latest version of this package using pip:
 
 ```sh
-python3 -m pip install --user plspm`
+python3 -m pip install --user plspm
 ```
 
 It's hosted on pypi: https://pypi.org/project/plspm/

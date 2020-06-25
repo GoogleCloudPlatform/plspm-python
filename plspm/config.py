@@ -25,7 +25,7 @@ class Structure:
     """Specify relationships betweeen constructs
 
 
-    Use this class to specify the relationships between constructs. It will generate a path matrix suitable for using in :class:`~.plspm.Config`.
+    Use this class to specify the relationships between constructs. It will generate a path matrix suitable for using in :class:`~.plspm.config.Config`.
     """
     def __init__(self):
         self.__toposort = TopoSort()
@@ -88,7 +88,7 @@ class Config:
         Once you have created an instance of this class, add the relevant latent and manifest variables with :meth:`add_lv` or :meth:`add_lv_with_columns_named`
 
         Args:
-            path: A square lower triangular matrix which specifies the paths between the latent variables (the inner model). The index and columns of this matrix must be the same, and must consist of the names of the latent variables. Cells should contain 1 if the variable in the column affects the variable in the row, 0 otherwise.
+            path: A matrix specifying the inner model. You can create this using :class:`~plspm.config.Structure`. This square lower triangular matrix specifies the paths between the latent variables (the inner model). The index and columns of this matrix must be the same, and must consist of the names of the latent variables. Cells should contain 1 if the variable in the column affects the variable in the row, 0 otherwise.
             scaled: Whether manifest variables should be standardized. When ``True``, data is scaled to standardized values (mean 0 and variance 1). Only used when ``default_scale`` is set to ``None``.
             default_scale: If your data is nonmetric, specify a default measurement type. Takes a value from the enum :class:`~plspm.scale.Scale`, or ``None`` (the default) if the data is metric and does not require scaling.
         """
