@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, math, numpy as np
+import pandas as pd, math, numpy as np, collections as c
 
 
 def treat(data: pd.DataFrame, center: bool = True, scale: bool = True, scale_values=None) -> pd.DataFrame:
@@ -110,3 +110,40 @@ def groupby_mean(data: np.ndarray) -> np.ndarray:
         means[0, i] = index
         means[1, i] = np.mean(values[index])
     return means
+
+
+class TopoSort:
+    """Internal fucntion which performs a topological sort using Kahn's algorithm"""
+
+    def __init__(self):
+        self.__indegree = c.Counter()
+        self.__children = {}
+        self.__edges = []
+    
+    def append(self, src: str, dest: str):
+        self.__edges.append((src, dest))
+        self.__indegree[dest] += 1
+        self.__indegree[src] += 0
+        for vertex in [src, dest]:
+            if vertex not in self.__children:
+                self.__children[vertex] = []
+        self.__children[src].append(dest)
+
+    def order(self):
+        ordered = []
+        orphaned = c.deque([v for v in self.__indegree if self.__indegree[v] == 0])
+        while orphaned:
+            vertex = orphaned.pop()
+            ordered.append(vertex)
+            for child in self.__children[vertex]:
+                self.__indegree[child] -= 1
+                if self.__indegree[child] == 0:
+                    orphaned.append(child)
+        for v in self.__indegree:
+            if self.__indegree[v] != 0:
+                raise ValueError("Structural graph contains cycles.")
+        return ordered
+        
+
+    def elements(self):
+        return self.__edges

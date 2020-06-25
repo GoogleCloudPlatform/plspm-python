@@ -35,16 +35,15 @@ from plspm.scheme import Scheme
 from plspm.mode import Mode
 
 satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
-lvs = ["IMAG", "EXPE", "QUAL", "VAL", "SAT", "LOY"]
-sat_path_matrix = pd.DataFrame(
-    [[0, 0, 0, 0, 0, 0],
-     [1, 0, 0, 0, 0, 0],
-     [0, 1, 0, 0, 0, 0],
-     [0, 1, 1, 0, 0, 0],
-     [1, 1, 1, 1, 0, 0],
-     [1, 0, 0, 0, 1, 0]],
-    index=lvs, columns=lvs)
-config = c.Config(sat_path_matrix, scaled=False)
+
+structure = c.Structure()
+structure.addPath(["IMAG"], ["EXPE", "SAT", "LOY"])
+structure.addPath(["EXPE"], ["QUAL", "VAL", "SAT"])
+structure.addPath(["QUAL"], ["VAL", "SAT"])
+structure.addPath(["VAL"], ["SAT"])
+structure.addPath(["SAT"], ["LOY"])
+
+config = c.Config(structure.path(), scaled=False)
 config.add_lv_with_columns_named("IMAG", Mode.A, satisfaction, "imag")
 config.add_lv_with_columns_named("EXPE", Mode.A, satisfaction, "expe")
 config.add_lv_with_columns_named("QUAL", Mode.A, satisfaction, "qual")
@@ -88,14 +87,10 @@ from plspm.scheme import Scheme
 from plspm.mode import Mode
 
 russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-lvs = ["AGRI", "IND", "POLINS"]
-rus_path = pd.DataFrame(
-    [[0, 0, 0],
-     [0, 0, 0],
-     [1, 1, 0]],
-    index=lvs,
-    columns=lvs)
-config = c.Config(rus_path, default_scale=Scale.NUM)
+
+structure = c.Structure()
+structure.addPath(["AGRI", "IND"], ["POLINS"])
+config = c.Config(structure.path(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
 config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))
@@ -130,16 +125,11 @@ from plspm.scale import Scale
 from plspm.scheme import Scheme
 from plspm.mode import Mode
 
-def russa_path_matrix():
-    lvs = ["AGRI", "IND", "POLINS"]
-    return pd.DataFrame(
-        [[0, 0, 0],
-         [0, 0, 0],
-         [1, 1, 0]],
-        index=lvs, columns=lvs)
-
 russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
-config = c.Config(russa_path_matrix(), default_scale=Scale.NUM)
+
+structure = c.Structure()
+structure.addPath(["AGRI", "IND"], ["POLINS"])
+config = c.Config(structure.path(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr", Scale.ORD), c.MV("labo", Scale.ORD))
 config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo", Scale.NOM), c.MV("inst"))
@@ -161,14 +151,10 @@ russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)
 russa.iloc[0, 0] = np.NaN
 russa.iloc[3, 3] = np.NaN
 russa.iloc[5, 5] = np.NaN
-lvs = ["AGRI", "IND", "POLINS"]
-rus_path = pd.DataFrame(
-    [[0, 0, 0],
-     [0, 0, 0],
-     [1, 1, 0]],
-    index=lvs,
-    columns=lvs)
-config = c.Config(rus_path, default_scale=Scale.NUM)
+
+structure = c.Structure()
+structure.addPath(["AGRI", "IND"], ["POLINS"])
+config = c.Config(structure.path(), default_scale=Scale.NUM)
 config.add_lv("AGRI", Mode.A, c.MV("gini"), c.MV("farm"), c.MV("rent"))
 config.add_lv("IND", Mode.A, c.MV("gnpr"), c.MV("labo"))
 config.add_lv("POLINS", Mode.A, c.MV("ecks"), c.MV("death"), c.MV("demo"), c.MV("inst"))

@@ -23,13 +23,9 @@ from plspm.mode import Mode
 
 
 def russa_path_matrix():
-    lvs = ["AGRI", "IND", "POLINS"]
-    return pd.DataFrame(
-        [[0, 0, 0],
-         [0, 0, 0],
-         [1, 1, 0]],
-        index=lvs, columns=lvs)
-
+    structure = c.Structure()
+    structure.addPath(["AGRI", "IND"], ["POLINS"])
+    return structure.path()
 
 def test_plspm_russa():
     russa = pd.read_csv("file:tests/data/russa.csv", index_col=0)

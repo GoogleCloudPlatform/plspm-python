@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pandas as pd, numpy as np, numpy.testing as npt, plspm.util as util, itertools as it, collections as c
+from plspm.util import TopoSort
 from plspm.mode import Mode
 from plspm.scale import Scale
 
@@ -27,8 +28,7 @@ class Structure:
     Use this class to specify the relationships between constructs. It will generate a path matrix suitable for using in :class:`~.plspm.Config`.
     """
     def __init__(self):
-        self.__paths = []
-        self.__constructs = c.Counter()
+        self.__toposort = TopoSort()
 
     def addPath(self, source: list, target: list):
         """Specify a relationship between two sets of constructs.
@@ -42,22 +42,15 @@ class Structure:
         if len(source) == 0 or len(target) == 0:
             raise ValueError("Both source and target must contain at least one entry")
         for element in it.product(source, target):
-            print(element)
-            self.__paths.append(element)
-            self.__constructs[element[0]] -= 1
-            self.__constructs[element[1]] += 1
+            self.__toposort.append(element[0], element[1])
 
     def path(self):
         """Get a path matrix for use in :class:`~plspm.Config`.
         """
-        dests = self.__constructs.most_common()
-        print(dests)
-        index = [dest[0] for dest in dests]
-        index.reverse()
+        index = self.__toposort.order()
         path = pd.DataFrame(np.zeros((len(index), len(index)), int), columns=index, index=index)
-        for source, target in self.__paths:
+        for source, target in self.__toposort.elements():
             path.at[target, source] = 1
-        print(path)
         return path
 
 class MV:

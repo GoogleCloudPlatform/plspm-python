@@ -5,16 +5,13 @@ from plspm.mode import Mode
 
 
 def satisfaction_path_matrix():
-    lvs = ["IMAG", "EXPE", "QUAL", "VAL", "SAT", "LOY"]
-    return pd.DataFrame(
-        [[0, 0, 0, 0, 0, 0],
-         [1, 0, 0, 0, 0, 0],
-         [0, 1, 0, 0, 0, 0],
-         [0, 1, 1, 0, 0, 0],
-         [1, 1, 1, 1, 0, 0],
-         [1, 0, 0, 0, 1, 0],
-         ],
-        index=lvs, columns=lvs)
+    structure = c.Structure()
+    structure.addPath(["IMAG"], ["EXPE", "SAT", "LOY"])
+    structure.addPath(["EXPE"], ["QUAL", "VAL", "SAT"])
+    structure.addPath(["QUAL"], ["VAL", "SAT"])
+    structure.addPath(["VAL"], ["SAT"])
+    structure.addPath(["SAT"], ["LOY"])
+    return structure.path()
 
 
 def test_bootstrap_metric():
