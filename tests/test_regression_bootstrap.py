@@ -17,7 +17,7 @@ def satisfaction_path_matrix():
 def test_bootstrap_metric():
     satisfaction = pd.read_csv("file:tests/data/satisfaction.csv", index_col=0)
     columns_to_drop = ["t stat."]
-    
+
     config = c.Config(satisfaction_path_matrix(), scaled=False)
     config.add_lv_with_columns_named("IMAG", Mode.A, satisfaction, "imag")
     config.add_lv_with_columns_named("EXPE", Mode.A, satisfaction, "expe")
