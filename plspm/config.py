@@ -94,6 +94,7 @@ class Config:
         """
         self.__modes = {}
         self.__mvs = {}
+        self.__hoc = {}
         self.__dummies = {}
         self.__mv_scales = {}
         self.__scaled = scaled
@@ -176,7 +177,7 @@ class Config:
             if scale is not None:
                 self.__metric = False
 
-#    def add_higher_order(self, name: str, mode: Mode, method: Method, lvs: list):
+    def add_higher_order(self, hoc_name: str, mode: Mode, lvs: list):
         """Add a higher order construct to the model.
 
         Args:
@@ -185,6 +186,12 @@ class Config:
             method: Estimation method to use
             lvs: A list of the first order constructs that comprise this second order construct
         """
+        # TODO: Warn if centroid scheme is used with HOC.
+        assert mode in Mode
+        if hoc_name not in self.__path:
+            raise ValueError("Path matrix does not contain reference to higher order construct " + hoc_name)
+        self.__modes[hoc_name] = mode
+        self.__hoc[hoc_name] = lvs
 
     def add_lv_with_columns_named(self, lv_name: str, mode: Mode, data: pd.DataFrame, col_name_starts_with: str,
                                   default_scale: Scale = None):
