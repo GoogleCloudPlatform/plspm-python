@@ -176,6 +176,16 @@ class Config:
             if scale is not None:
                 self.__metric = False
 
+#    def add_higher_order(self, name: str, mode: Mode, method: Method, lvs: list):
+        """Add a higher order construct to the model.
+
+        Args:
+            name: The name of the higher order constuct to add. Must match the name used in the columns / index of the Path matrix passed into the constructor.
+            mode: Whether to use correlation weights (mode A) or regression weights (mode B) with respect to the relationship between the second order construct and its component first order constructs.
+            method: Estimation method to use
+            lvs: A list of the first order constructs that comprise this second order construct
+        """
+
     def add_lv_with_columns_named(self, lv_name: str, mode: Mode, data: pd.DataFrame, col_name_starts_with: str,
                                   default_scale: Scale = None):
         """Add a latent variable and associated manifest variables to the model.

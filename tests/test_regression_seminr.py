@@ -37,11 +37,36 @@ def test_paths():
     config.add_lv_with_columns_named("Image", Mode.A, mobi, "IMAG")
     config.add_lv_with_columns_named("Complaints", Mode.A, mobi, "CUSCO")
     mobi_pls = Plspm(mobi, config, Scheme.PATH, 100, 0.00000001)
-
     expected_outer_model = pd.read_csv("file:tests/data/seminr-mobi-basic-outer-model.csv", index_col=0)
     actual_outer_model = mobi_pls.outer_model().drop(["communality","redundancy"], axis=1)
     npt.assert_allclose(expected_outer_model.sort_index(), actual_outer_model.sort_index(), rtol=1e-5)
 
     expected_paths = pd.read_csv("file:tests/data/seminr-mobi-basic-paths.csv", index_col=0)
+    actual_paths = mobi_pls.path_coefficients().transpose()
+    npt.assert_allclose(expected_paths.sort_index().sort_index(axis=1), actual_paths.sort_index().sort_index(axis=1), rtol=1e-6)
+
+def test_hoc_two_stage():
+    assert False
+    mobi = pd.read_csv("file:tests/data/mobi.csv", index_col=0)
+
+    structure = c.Structure()
+    structure.add_path(["Expectation", "Quality"], ["Satisfaction"])
+    structure.add_path(["Satisfaction"], ["Complaints", "Loyalty"])
+
+    config = c.Config(structure.path(), default_scale=Scale.NUM)
+    config.add_lv_with_columns_named("Expectation", Mode.A, mobi, "CUEX")
+    config.add_lv_with_columns_named("Quality", Mode.B, mobi, "PERQ")
+    config.add_lv_with_columns_named("Loyalty", Mode.A, mobi, "CUSL")
+    config.add_lv_with_columns_named("Image", Mode.A, mobi, "IMAG")
+    config.add_lv_with_columns_named("Complaints", Mode.A, mobi, "CUSCO")
+    config.add_lv_with_columns_named("Value", Mode.A, mobi, "PERV")
+    config.add_hoc("Satisfaction", Mode.A, Method.TWO_STAGE, ["Image", "Value"])
+    mobi_pls = Plspm(mobi, config, Scheme.PATH, 100, 0.00000001)
+
+    expected_outer_model = pd.read_csv("file:tests/data/seminr-mobi-hoc-ts-outer-model.csv", index_col=0)
+    actual_outer_model = mobi_pls.outer_model().drop(["communality","redundancy"], axis=1)
+    npt.assert_allclose(expected_outer_model.sort_index(), actual_outer_model.sort_index(), rtol=1e-5)
+
+    expected_paths = pd.read_csv("file:tests/data/seminr-mobi-hoc-ts-paths.csv", index_col=0)
     actual_paths = mobi_pls.path_coefficients().transpose()
     npt.assert_allclose(expected_paths.sort_index().sort_index(axis=1), actual_paths.sort_index().sort_index(axis=1), rtol=1e-6)
