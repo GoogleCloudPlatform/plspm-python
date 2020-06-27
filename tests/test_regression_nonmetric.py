@@ -39,9 +39,11 @@ def test_plspm_russa():
     npt.assert_allclose(util.sort_cols(expected_scores), util.sort_cols(plspm_calc.scores()))
 
     expected_inner_model = pd.read_csv("file:tests/data/russa.inner_model.csv", index_col=0)
-    actual_inner_model = plspm_calc.inner_model()["POLINS"]
+    actual_inner_model = plspm_calc.inner_model()
+    actual_inner_model = actual_inner_model[actual_inner_model['to'].isin(["POLINS"])].drop(["to"], axis=1)
+
     npt.assert_allclose(util.sort_cols(expected_inner_model).sort_index(),
-                        util.sort_cols(actual_inner_model).sort_index())
+                        util.sort_cols(actual_inner_model.set_index(["from"],drop=True)).sort_index())
 
     expected_outer_model = pd.read_csv("file:tests/data/russa.outer_model.csv", index_col=0)
     npt.assert_allclose(

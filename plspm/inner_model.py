@@ -18,13 +18,16 @@
 import pandas as pd, statsmodels.api as sm
 
 
-def _summary(regression):
-    summary = pd.DataFrame(0, columns=['estimate', 'std error', 't', 'p>|t|'], index=regression.params.index)
+def _summary(dv, regression):
+    summary = pd.DataFrame(0, columns=['from', 'to', 'estimate', 'std error', 't', 'p>|t|'], index=regression.params.index)
+    summary['to'] = dv
+    summary['from'] = regression.params.index
     summary['estimate'] = regression.params
     summary['std error'] = regression.bse
     summary['t'] = regression.tvalues
     summary['p>|t|'] = regression.pvalues
-    return summary
+    summary['index'] = summary['from'] + " -> " + summary['to']
+    return summary.drop(['const']).reset_index(drop=True)
 
 
 def _effects(path: pd.DataFrame):
@@ -53,7 +56,7 @@ def _effects(path: pd.DataFrame):
 class InnerModel:
     """Internal class that calculates the attributes of the inner model. Use the methods :meth:`~plspm.Plspm.inner_model`, :meth:`~plspm.Plspm.path_coefficients`, and :meth:`~plspm.Plspm.effects` defined on :class:`~.plspm.Plspm` to retrieve the inner model characteristics."""
     def __init__(self, path: pd.DataFrame, scores: pd.DataFrame):
-        self.__summaries = {}
+        self.__summaries = pd.DataFrame()
         self.__r_squared = pd.Series(0, index=path.index, name="r_squared")
         self.__r_squared_adj = pd.Series(0, index=path.index, name="r_squared_adj")
         self.__path_coefficients = pd.DataFrame(0, columns=path.columns, index=path.index)
@@ -68,7 +71,7 @@ class InnerModel:
             rsquared = regression.rsquared
             self.__r_squared.loc[dv] = rsquared
             self.__r_squared_adj.loc[dv] = 1 - (1 - rsquared) * (rows - 1) / (rows - path.loc[dv].sum() - 1)
-            self.__summaries[dv] = _summary(regression).drop("const")
+            self.__summaries = self.__summaries.append(_summary(dv, regression)).reset_index(drop=True)
         self.__effects = _effects(self.__path_coefficients)
 
     def path_coefficients(self) -> pd.DataFrame:
@@ -83,9 +86,9 @@ class InnerModel:
         """Internal method that returns adjusted r squared for the latent variables."""
         return self.__r_squared_adj
 
-    def inner_model(self) -> dict:
+    def inner_model(self) -> pd.DataFrame:
         """Internal method that returns summaries of the characteristics of the inner model for each latent variable."""
-        return self.__summaries
+        return self.__summaries.set_index(['index'])
 
     def effects(self) -> pd.DataFrame:
         """Internal method that returns indirect, direct, and total effects for each path in the model."""

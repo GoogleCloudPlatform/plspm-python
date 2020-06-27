@@ -92,12 +92,12 @@ class Plspm:
         """
         return self.__outer_model.model()
 
-    def inner_model(self) -> dict:
+    def inner_model(self) -> pd.DataFrame:
         """
         Gets the inner model for the endogenous latent variables
 
         Returns:
-            a dict with a key for each endogenous latent variable which maps to a DataFrame for its value. The DataFrame for each endogenous latent variable has a row for each latent variable with a path to it, and the columns for estimate, std error, t, and p>|t|.
+            a DataFrame with a row for each latent variable with a direct path to it, and columns for estimate, std error, t, and p>|t|.
         """
         return self.__inner_model.inner_model()
 
