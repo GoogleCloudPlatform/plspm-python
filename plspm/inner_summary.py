@@ -28,9 +28,9 @@ class InnerSummary:
         lv_type = path.sum(axis=1).astype(bool)
         lv_type.name = "type"
         lv_type_text = lv_type.replace(False, "Exogenous").replace(True, "Endogenous")
-        block_communality = pd.Series(0, index=path.index, name="block_communality")
-        mean_redundancy = pd.Series(0, index=path.index, name="mean_redundancy")
-        ave = pd.Series(0, index=path.index, name="ave")
+        block_communality = pd.Series(np.NaN, index=path.index, name="block_communality")
+        mean_redundancy = pd.Series(np.NaN, index=path.index, name="mean_redundancy")
+        ave = pd.Series(np.NaN, index=path.index, name="ave")
         communality_aux = []
         num_mvs_in_lv = []
         for lv in config.lvs():
