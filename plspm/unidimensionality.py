@@ -42,12 +42,15 @@ class Unidimensionality:
                 pca_scores = pca.fit_transform(pca_input)
                 pca_std_dev = np.std(pca_scores, axis=0)
                 summary.loc[lv, "eig_1st"] = pca_std_dev[0] ** 2
-                summary.loc[lv, "eig_2nd"] = pca_std_dev[1] ** 2
+                summary.loc[lv, "eig_2nd"] = pca_std_dev[1] ** 2 if mvs > 1 else np.nan
                 if (self.__config.mode(lv) == Mode.A):
-                    ca_numerator = 2 * np.tril(pca_input.corr(), -1).sum()
-                    ca_denominator = pca_input.sum(axis=1).var() / self.__correction ** 2
-                    ca = (ca_numerator / ca_denominator) * (mvs / (mvs - 1))
-                    summary.loc[lv, "cronbach_alpha"] = ca if ca > 0 else 0
+                    if mvs > 1:
+                        ca_numerator = 2 * np.tril(pca_input.corr(), -1).sum()
+                        ca_denominator = pca_input.sum(axis=1).var() / self.__correction ** 2
+                        ca = max(0, (ca_numerator / ca_denominator) * (mvs / (mvs - 1)))
+                    else:
+                        ca = np.nan
+                    summary.loc[lv, "cronbach_alpha"] = ca
                     corr = np.corrcoef(np.column_stack((pca_input.values, pca_scores[:,0])), rowvar=False)[:,-1][:-1]
                     rho_numerator = sum(corr) ** 2
                     rho_denominator = rho_numerator + (mvs - np.sum(np.power(corr, 2)))
