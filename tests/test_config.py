@@ -145,3 +145,11 @@ def test_create_path_from_structure():
     structure.add_path(source=["BONOBO", "MANDRILL"], target=["APE"]);
     structure.add_path(source=["APE"], target=["CATFISH", "GOAT"]);
     pt.assert_frame_equal(expected, structure.path())
+
+def test_cannot_add_mvs_twice():
+    structure = c.Structure()
+    structure.add_path(source=["BONOBO"], target=["APE"]);
+    config = c.Config(structure.path())
+    config.add_lv("BONOBO", Mode.A, c.MV("a"), c.MV("b"))
+    with pytest.raises(ValueError):
+        config.add_lv("APE", Mode.A, c.MV("a"), c.MV("b"))

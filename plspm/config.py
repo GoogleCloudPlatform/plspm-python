@@ -171,6 +171,8 @@ class Config:
         self.__modes[lv_name] = mode
         self.__mvs[lv_name] = []
         for mv in mvs:
+            if mv.name() in self.__mv_scales:
+                raise ValueError("You can only specify a column once. You can specify a higher order construct with `add_higher_order(...)`")
             self.__mvs[lv_name].append(mv.name())
             scale = self.__default_scale if mv.scale() is None else mv.scale()
             self.__mv_scales[mv.name()] = scale
