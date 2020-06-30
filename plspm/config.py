@@ -27,8 +27,12 @@ class Structure:
 
     Use this class to specify the relationships between constructs. It will generate a path matrix suitable for using in :class:`~.plspm.config.Config`.
     """
-    def __init__(self):
+    def __init__(self, path: pd.DataFrame = None):
         self.__toposort = TopoSort()
+        if path is not None:
+            paths = [(path.columns[y], path.index[x]) for x, y in zip(*np.where(path.values == 1))]
+            for my_path in paths:
+                self.add_path([my_path[0]], [my_path[1]])
 
     def add_path(self, source: list, target: list):
         """Specify a relationship between two sets of constructs.
@@ -137,6 +141,10 @@ class Config:
         """Internal method that returns a list of the latent variables in the model."""
         return list(self.path())
 
+    def hoc(self):
+        """Internal method that returns a list of the higher order constructs in the model."""
+        return self.__hoc
+
     def mode(self, lv: str):
         """Internal method that returns the mode of a given latent variable."""
         return self.__modes[lv]
@@ -166,8 +174,9 @@ class Config:
             *mvs: A list of manifest variables that make up the latent variable. These must be instances of :class:`MV`
         """
         assert mode in Mode
-        if lv_name not in self.__path:
-            raise ValueError("Path matrix does not contain reference to latent variable " + lv_name)
+        hoc_lvs = [item for lvs in self.__hoc.values() for item in lvs]
+        if lv_name not in self.__path and lv_name not in hoc_lvs:
+            raise ValueError("Latent variable " + lv_name + " is not listed in the outer model paths or higher order constructs.")
         self.__modes[lv_name] = mode
         self.__mvs[lv_name] = []
         for mv in mvs:
@@ -179,6 +188,15 @@ class Config:
             if scale is not None:
                 self.__metric = False
 
+    def remove_lv(self, lv_name:str):
+        """Remove a latent variable and associated manifest variables from the model.
+
+        Args:
+            lv_name: The name of the latent variable to remove.
+        """
+        self.__mvs.pop(lv_name)
+        self.__modes.pop(lv_name)
+        
     def add_higher_order(self, hoc_name: str, mode: Mode, lvs: list):
         """Add a higher order construct to the model.
 
@@ -226,7 +244,7 @@ class Config:
         Raises:
             ValueError: if the dataset is missing any columns with names that were specified as manifest variables in the model, or if there are any non-numeric values in the dataset.
         """
-        if (set(self.__mvs.keys()) != set(self.path())):
+        if set(self.__mvs.keys()) != set(self.path()):
             raise ValueError(
                 "The Path matrix supplied does not specify the same latent variables as you added when configuring manifest variables." +
                 " Path: " + ",".join(set(self.path())) + " LVs: " + ",".join(set(self.__mvs.keys())))

@@ -20,6 +20,7 @@ import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, p
 from plspm.scheme import Scheme
 from plspm.unidimensionality import Unidimensionality
 from plspm.bootstrap import Bootstrap
+from plspm.higher_order import HOCEstimator
 
 
 class Plspm:
@@ -56,7 +57,8 @@ class Plspm:
         if bootstrap_iterations < 10:
             bootstrap_iterations = 100
 
-        data_untreated = config.filter(data)
+        hoc_estimator = HOCEstimator(config)
+        data_untreated = config.filter(hoc_estimator.hoc_weights(data))
         treated_data = config.treat(data_untreated)
         correction = np.sqrt(treated_data.shape[0] / (treated_data.shape[0] - 1))
 
