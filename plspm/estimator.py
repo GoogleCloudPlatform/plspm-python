@@ -27,20 +27,34 @@ class Estimator:
         hocs = self.__config.hoc()
         for hoc in hocs:
             new_mvs = []
+            # create new LV representing HOC combining MVs of constituent first-order construct
             for lv in hocs[hoc]:
                 mvs = self.__config.mvs(lv)
                 for mv in mvs:
                     mv_new = hoc + "_" + mv
                     data[mv_new] = data[mv]
                     new_mvs.append(c.MV(mv_new, self.__config.scale(mv)))
-                if lv not in list(self.__config.path()):
-                    self.__config.remove_lv(lv)
             self.__config.add_lv(hoc, self.__config.mode(hoc), *new_mvs)
         return data
 
     def estimate(self, calculator: WeightsCalculatorFactory, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        path = self.first_stage_path()
+
         treated_data = self.__config.treat(data)
         final_data, scores, weights = calculator.calculate(treated_data)
         return final_data, scores, weights
 
-                            
+    def first_stage_path(self) -> pd.DataFrame:
+        # For first pass, for HOCs we'll create paths from each and for each exogenous LV to the cconstituent LVs,
+        # and from each consituent LV to the HOC.
+        path = self.__config.path()
+        structure = c.Structure(path)
+        print(self.__config.hoc())
+        for hoc, lvs in self.__config.hoc().items():
+            structure.add_path(lvs, [hoc])
+            exogenous = path.loc[hoc]
+            for lv in list(exogenous[exogenous == 1].index):
+                structure.add_path([lv], lvs)
+        return structure.path()
+            
+            

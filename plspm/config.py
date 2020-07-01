@@ -127,7 +127,9 @@ class Config:
 
     def odm(self):
         """Internal method that returns the outer design matrix showing which manifest variables belong to which latent variables in the model."""
-        return util.list_to_dummy(self.__mvs)
+        # Filter out LVs that aren't in path matrix
+        mvs = { key: self.__mvs[key] for key in list(self.path()) }
+        return util.list_to_dummy(mvs)
 
     def mv_index(self, lv, mv):
         """Internal method that returns the index of a manifest variable for a given latent variable."""
@@ -138,7 +140,7 @@ class Config:
         return self.__mvs[lv]
 
     def hoc(self):
-        """Internal method that returns a list of the higher order constructs in the model."""
+        """Internal method that returns a dictionary with the higher order constructs in the model as the key and the list of constituent LVs as the value."""
         return self.__hoc
 
     def mode(self, lv: str):
@@ -240,7 +242,8 @@ class Config:
         Raises:
             ValueError: if the dataset is missing any columns with names that were specified as manifest variables in the model, or if there are any non-numeric values in the dataset.
         """
-        if set(self.__mvs.keys()) != set(self.path()):
+        hoc_lvs = [item for lvs in self.__hoc.values() for item in lvs]
+        if set(self.__mvs.keys()) != set(list(self.path()) + hoc_lvs):
             raise ValueError(
                 "The Path matrix supplied does not specify the same latent variables as you added when configuring manifest variables." +
                 " Path: " + ",".join(set(self.path())) + " LVs: " + ",".join(set(self.__mvs.keys())))
