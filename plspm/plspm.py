@@ -65,7 +65,7 @@ class Plspm:
         final_data, scores, weights = estimator.estimate(calculator, filtered_data)
 
         self.__inner_model = im.InnerModel(config.path(), scores)
-        self.__outer_model = om.OuterModel(final_data, scores, weights, config.odm(), self.__inner_model.r_squared())
+        self.__outer_model = om.OuterModel(final_data, scores, weights, config.odm(config.path()), self.__inner_model.r_squared())
         self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(),
                                                 self.__inner_model.r_squared_adj(), self.__outer_model.model())
         self.__unidimensionality = Unidimensionality(config, filtered_data, correction)

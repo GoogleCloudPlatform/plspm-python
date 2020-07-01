@@ -47,14 +47,14 @@ class Bootstrap:
             try:
                 boot_observations = np.random.randint(observations, size=observations)
                 boot_data = config.treat(data.iloc[boot_observations, :])
-                _final_data, _scores, _weights = calculator.calculate(boot_data)
+                _final_data, _scores, _weights = calculator.calculate(boot_data, config.path())
                 weights = weights.append(_weights.T, ignore_index=True)
                 inner_model = im.InnerModel(config.path(), _scores)
                 r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)
                 total_effects = total_effects.append(inner_model.effects().loc[:, "total"].T, ignore_index=True)
                 paths = paths.append(inner_model.effects().loc[:, "direct"].T, ignore_index=True)
                 loadings = loadings.append(
-                    (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm()).sum(axis=1), ignore_index=True)
+                    (_scores.apply(lambda s: _final_data.corrwith(s)) * config.odm(config.path())).sum(axis=1), ignore_index=True)
             except:
                 pass
         self.__weights = _create_summary(weights, outer_model.model().loc[:, "weight"])

@@ -25,8 +25,8 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 class _MetricWeights:
     """Internal class that calculates weights and scores when using metric data."""
-    def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
-        odm = config.odm()
+    def __init__(self, data: pd.DataFrame, config: c.Config, correction: float, path: pd.DataFrame):
+        odm = config.odm(path)
         weight_factors = correction / data.dot(odm).std(axis=0)
         self.__mvs = list(odm.index)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)
@@ -36,12 +36,13 @@ class _MetricWeights:
         self.__config = config
         self.__weights = weights
         self.__correction = correction
+        self.__path = path
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
-        lvs = list(self.__config.path())
+        lvs = list(self.__path)
         scores = self.__data.dot(self.__weights).reindex(lvs, axis=1)
         scores = util.treat(scores) / self.__correction
-        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), scores.values), index=lvs, columns=lvs)
+        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__path, scores.values), index=lvs, columns=lvs)
         Z = scores.dot(inner_weights)
         for lv in list(lvs):
             mvs = self.__config.mvs(lv)
@@ -71,12 +72,12 @@ class _MetricWeights:
 
 class _NonmetricWeights:
     """Internal class that calculates weights and scores when using nonmetric data."""
-    def __init__(self, data: pd.DataFrame, config: c.Config, correction: float):
+    def __init__(self, data: pd.DataFrame, config: c.Config, correction: float, path: pd.DataFrame):
         self.__mv_grouped_by_lv_initial = {}
         self.__mvs = []
         mv_grouped_by_lv = {}
         self.__mv_grouped_by_lv_missing = {}
-        lvs = list(config.path())
+        lvs = list(path)
         scores = np.zeros((len(data.index), len(lvs)), dtype=np.float64)
         for i, lv in enumerate(lvs):
             mvs = config.mvs(lv)
@@ -101,13 +102,14 @@ class _NonmetricWeights:
         self.__config = config
         self.__correction = correction
         self.__index = data.index
+        self.__path = path
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
         self.__betas = {}
         scores_old = self.__scores.copy()
-        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__scores)
+        inner_weights = inner_weight_calculator.value.calculate(self.__path, self.__scores)
         Z = np.dot(self.__scores, inner_weights)
-        for i, lv in enumerate(list(self.__config.path())):
+        for i, lv in enumerate(list(self.__path)):
             for j, mv in enumerate(list(self.__config.mvs(lv))):
                 self.__mv_grouped_by_lv[lv][:, j] = \
                     self.__config.scale(mv).value.scale(lv, mv, Z[:, i], self)
@@ -118,7 +120,7 @@ class _NonmetricWeights:
         return np.power(np.abs(scores_old) - np.abs(self.__scores), 2).sum()
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        lvs = list(self.__config.path())
+        lvs = list(self.__path)
         weights = pd.DataFrame(0, index=self.__mvs, columns=lvs)
         data_new = pd.DataFrame(0, index=self.__index, columns=self.__mvs)
         for lv in lvs:
@@ -161,12 +163,12 @@ class WeightsCalculatorFactory:
         self.__correction = correction
         self.__scheme = scheme
 
-    def calculate(self, data: pd.DataFrame):
+    def calculate(self, data: pd.DataFrame, path: pd.DataFrame):
         """Internal method that performs the calculation to estimate weights and scores."""
         if self.__config.metric():
-            calculator = _MetricWeights(data, self.__config, self.__correction)
+            calculator = _MetricWeights(data, self.__config, self.__correction, path)
         else:
-            calculator = _NonmetricWeights(data, self.__config, self.__correction)
+            calculator = _NonmetricWeights(data, self.__config, self.__correction, path)
 
         iteration = 0
         while True:

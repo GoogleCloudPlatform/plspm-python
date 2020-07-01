@@ -65,9 +65,15 @@ def test_hoc_two_stage():
     expected_outer_model = pd.read_csv("file:tests/data/seminr-mobi-hoc-ts-outer-model.csv", index_col=0)
     actual_outer_model = mobi_pls.outer_model().drop(["communality","redundancy"], axis=1)
     indices = list(set(expected_outer_model.index.values.tolist()).intersection(set(actual_outer_model.index.values.tolist())))
+    expected_outer_model = expected_outer_model.loc[indices].sort_index().sort_index(axis=1)
+    actual_outer_model = actual_outer_model.loc[indices].sort_index().sort_index(axis=1)
+    print(expected_outer_model)
+    print(actual_outer_model)
     # yikes, the weights and loadings are way out...
-    #npt.assert_allclose(expected_outer_model.loc[indices].sort_index(), actual_outer_model.loc[indices].sort_index(), rtol=0.1)
+    #npt.assert_allclose(expected_outer_model, actual_outer_model, rtol=0.1)
 
-    expected_paths = pd.read_csv("file:tests/data/seminr-mobi-hoc-ts-paths.csv", index_col=0)
-    actual_paths = mobi_pls.path_coefficients().transpose()
+    expected_paths = pd.read_csv("file:tests/data/seminr-mobi-hoc-ts-paths.csv", index_col=0).transpose()
+    actual_paths = mobi_pls.path_coefficients()
+    print(expected_paths.sort_index().sort_index(axis=1))
+    print(actual_paths.sort_index().sort_index(axis=1))
     npt.assert_allclose(expected_paths.sort_index().sort_index(axis=1), actual_paths.sort_index().sort_index(axis=1), rtol=0.1)

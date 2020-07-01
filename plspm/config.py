@@ -125,10 +125,10 @@ class Config:
         """Internal method that returns the matrix of paths provided in the constructor."""
         return self.__path
 
-    def odm(self):
+    def odm(self, path: pd.DataFrame):
         """Internal method that returns the outer design matrix showing which manifest variables belong to which latent variables in the model."""
         # Filter out LVs that aren't in path matrix
-        mvs = { key: self.__mvs[key] for key in list(self.path()) }
+        mvs = { key: self.__mvs[key] for key in list(path) }
         return util.list_to_dummy(mvs)
 
     def mv_index(self, lv, mv):

@@ -17,6 +17,7 @@
 
 import plspm.config as c, pandas as pd
 from plspm.weights import WeightsCalculatorFactory
+from plspm.scale import Scale
 from typing import Tuple
 
 class Estimator:
@@ -39,9 +40,24 @@ class Estimator:
 
     def estimate(self, calculator: WeightsCalculatorFactory, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         path = self.first_stage_path()
-
         treated_data = self.__config.treat(data)
-        final_data, scores, weights = calculator.calculate(treated_data)
+        final_data, scores, weights = calculator.calculate(treated_data, path)
+
+        hocs = self.__config.hoc()
+        if None is not None:
+            scale = None if self.__config.metric else Scale.NUM
+            for hoc in hocs:
+                new_mvs = []
+                cols_to_drop = [col for col in list(data) if col.startswith(hoc + "_")]
+                data = data.drop(columns=cols_to_drop)
+                for lv in hocs[hoc]:
+                    mv_new = hoc + "_" + lv
+                    data[mv_new] = scores[lv]
+                    new_mvs.append(c.MV(mv_new, scale))
+                self.__config.add_lv(hoc, self.__config.mode(hoc), *new_mvs)
+            treated_data = self.__config.treat(data)
+            final_data, scores, weights = calculator.calculate(treated_data, self.__config.path())
+
         return final_data, scores, weights
 
     def first_stage_path(self) -> pd.DataFrame:
@@ -49,7 +65,6 @@ class Estimator:
         # and from each consituent LV to the HOC.
         path = self.__config.path()
         structure = c.Structure(path)
-        print(self.__config.hoc())
         for hoc, lvs in self.__config.hoc().items():
             structure.add_path(lvs, [hoc])
             exogenous = path.loc[hoc]
