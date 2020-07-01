@@ -33,7 +33,7 @@ class InnerSummary:
         ave = pd.Series(np.NaN, index=path.index, name="ave")
         communality_aux = []
         num_mvs_in_lv = []
-        for lv in config.lvs():
+        for lv in list(config.path()):
             communality = outer_model.loc[:, "communality"].loc[config.mvs(lv)]
             block_communality.loc[lv] = communality.mean()
             mean_redundancy.loc[lv] = outer_model.loc[:, "redundancy"].loc[config.mvs(lv)].mean()

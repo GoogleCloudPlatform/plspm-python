@@ -137,10 +137,6 @@ class Config:
         """Internal method that returns the manifest variables belonging to a given latent variable."""
         return self.__mvs[lv]
 
-    def lvs(self):
-        """Internal method that returns a list of the latent variables in the model."""
-        return list(self.path())
-
     def hoc(self):
         """Internal method that returns a list of the higher order constructs in the model."""
         return self.__hoc
@@ -261,7 +257,7 @@ class Config:
         if self.__missing:
             mv_grouped_by_lv = {}
             rows_to_delete = set()
-            for i, lv in enumerate(self.lvs()):
+            for i, lv in enumerate(list(self.path())):
                 mvs = self.mvs(lv)
                 mv_grouped_by_lv[lv] = data.filter(mvs).values.astype(np.float64)
                 for j in range(len(data.index)):

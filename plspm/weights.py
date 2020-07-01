@@ -38,7 +38,7 @@ class _MetricWeights:
         self.__correction = correction
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
-        lvs = self.__config.lvs()
+        lvs = list(self.__config.path())
         y = self.__data.dot(self.__weights).reindex(lvs, axis=1)
         y = util.treat(y) / self.__correction
         inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), y.values), index=lvs, columns=lvs)
@@ -76,8 +76,9 @@ class _NonmetricWeights:
         self.__mvs = []
         mv_grouped_by_lv = {}
         self.__mv_grouped_by_lv_missing = {}
-        y = np.zeros((len(data.index), len(config.lvs())), dtype=np.float64)
-        for i, lv in enumerate(config.lvs()):
+        lvs = list(config.path())
+        y = np.zeros((len(data.index), len(lvs)), dtype=np.float64)
+        for i, lv in enumerate(lvs):
             mvs = config.mvs(lv)
             self.__mvs.extend(mvs)
             mv_grouped_by_lv[lv] = data.filter(config.mvs(lv)).values.astype(np.float64)
@@ -106,7 +107,7 @@ class _NonmetricWeights:
         y_old = self.__y.copy()
         inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
         Z = np.dot(self.__y, inner_weights)
-        for i, lv in enumerate(list(self.__config.lvs())):
+        for i, lv in enumerate(list(self.__config.path())):
             for j, mv in enumerate(list(self.__config.mvs(lv))):
                 self.__mv_grouped_by_lv[lv][:, j] = \
                     self.__config.scale(mv).value.scale(lv, mv, Z[:, i], self)
@@ -117,10 +118,10 @@ class _NonmetricWeights:
         return np.power(np.abs(y_old) - np.abs(self.__y), 2).sum()
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        lvs = self.__config.lvs()
+        lvs = list(self.__config.path())
         weights = pd.DataFrame(0, index=self.__mvs, columns=lvs)
         data_new = pd.DataFrame(0, index=self.__index, columns=self.__mvs)
-        for lv in self.__config.lvs():
+        for lv in lvs:
             mvs = self.__config.mvs(lv)
             weights.loc[mvs, [lv]] = self.__weights[lv]
             data_new.loc[:, mvs] = self.__mv_grouped_by_lv[lv]

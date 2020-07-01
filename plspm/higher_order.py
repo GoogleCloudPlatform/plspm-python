@@ -31,7 +31,7 @@ class HOCEstimator:
                     mv_new = hoc + "_" + mv
                     data[mv_new] = data[mv]
                     new_mvs.append(c.MV(mv_new, self.__config.scale(mv)))
-                if lv not in self.__config.lvs():
+                if lv not in list(self.__config.path()):
                     self.__config.remove_lv(lv)
             self.__config.add_lv(hoc, self.__config.mode(hoc), *new_mvs)
         return data
