@@ -31,7 +31,7 @@ class _MetricWeights:
         self.__mvs = list(odm.index)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)
         weights = odm.dot(wf_diag)
-        self.__w_old = weights.sum(axis=1).to_frame(name="weight")
+        self.__weights_old = weights.sum(axis=1).to_frame(name="weight")
         self.__data = data
         self.__config = config
         self.__weights = weights
@@ -39,34 +39,34 @@ class _MetricWeights:
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
         lvs = list(self.__config.path())
-        y = self.__data.dot(self.__weights).reindex(lvs, axis=1)
-        y = util.treat(y) / self.__correction
-        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), y.values), index=lvs, columns=lvs)
-        Z = y.dot(inner_weights)
+        scores = self.__data.dot(self.__weights).reindex(lvs, axis=1)
+        scores = util.treat(scores) / self.__correction
+        inner_weights = pd.DataFrame(inner_weight_calculator.value.calculate(self.__config.path(), scores.values), index=lvs, columns=lvs)
+        Z = scores.dot(inner_weights)
         for lv in list(lvs):
             mvs = self.__config.mvs(lv)
             weights = self.__config.mode(lv).value.outer_weights_metric(self.__data, Z, lv, mvs)
             self.__weights.loc[mvs, [lv]] = weights
-        w_new = self.__weights.sum(axis=1).to_frame(name="weight")
-        convergence = np.power(self.__w_old.abs() - w_new.abs(), 2).sum(axis=1).sum(axis=0)
-        self.__w_old = w_new
+        weights_new = self.__weights.sum(axis=1).to_frame(name="weight")
+        convergence = np.power(self.__weights_old.abs() - weights_new.abs(), 2).sum(axis=1).sum(axis=0)
+        self.__weights_old = weights_new
         return convergence
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         weight_factors = 1 / (self.__data.dot(self.__weights).std(axis=0) / self.__correction)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=weight_factors.index, columns=weight_factors.index)
         weights = self.__weights.dot(wf_diag)
-        y = self.__data.dot(weights)
-        cor = pd.concat([self.__data, y], axis=1).corr().loc[list(self.__data), list(y)]
+        scores = self.__data.dot(weights)
+        cor = pd.concat([self.__data, scores], axis=1).corr().loc[list(self.__data), list(scores)]
         odm = weights.apply(lambda x: x!= 0).astype(int)
         sign = lambda x : math.copysign(1.0, x)
         w_sign = (cor * odm).applymap(sign).sum(axis=0).apply(sign)
         if -1 in w_sign.values:
             w_sign = w_sign.apply(lambda x : -1 if x == 0 else x)
             w_sign_matrix = pd.DataFrame(np.diag(w_sign), index=w_sign.index, columns=w_sign.index)
-            y = y.dot(w_sign_matrix)
+            scores = scores.dot(w_sign_matrix)
         weights = pd.DataFrame(weights.sum(axis=1), index=self.__mvs, columns=["weight"])
-        return self.__data, y, weights
+        return self.__data, scores, weights
 
 
 class _NonmetricWeights:
@@ -77,7 +77,7 @@ class _NonmetricWeights:
         mv_grouped_by_lv = {}
         self.__mv_grouped_by_lv_missing = {}
         lvs = list(config.path())
-        y = np.zeros((len(data.index), len(lvs)), dtype=np.float64)
+        scores = np.zeros((len(data.index), len(lvs)), dtype=np.float64)
         for i, lv in enumerate(lvs):
             mvs = config.mvs(lv)
             self.__mvs.extend(mvs)
@@ -92,11 +92,11 @@ class _NonmetricWeights:
                     denominator = np.power(weight * self.__mv_grouped_by_lv_missing[lv][j, :], 2).sum()
                     if denominator == 0:
                         raise ValueError("All mvs for lv " + lv + " in row " + str(j) + " are NaN.")
-                    y[j, i] = numerator / denominator
+                    scores[j, i] = numerator / denominator
             else:
-                y[:, i] = np.dot(mv_grouped_by_lv[lv], weight)
+                scores[:, i] = np.dot(mv_grouped_by_lv[lv], weight)
         self.__weights = {}
-        self.__y = y
+        self.__scores = scores
         self.__mv_grouped_by_lv = mv_grouped_by_lv
         self.__config = config
         self.__correction = correction
@@ -104,18 +104,18 @@ class _NonmetricWeights:
 
     def iterate(self, inner_weight_calculator: Scheme) -> float:
         self.__betas = {}
-        y_old = self.__y.copy()
-        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__y)
-        Z = np.dot(self.__y, inner_weights)
+        scores_old = self.__scores.copy()
+        inner_weights = inner_weight_calculator.value.calculate(self.__config.path(), self.__scores)
+        Z = np.dot(self.__scores, inner_weights)
         for i, lv in enumerate(list(self.__config.path())):
             for j, mv in enumerate(list(self.__config.mvs(lv))):
                 self.__mv_grouped_by_lv[lv][:, j] = \
                     self.__config.scale(mv).value.scale(lv, mv, Z[:, i], self)
-            self.__weights[lv], self.__y[:, i] = \
+            self.__weights[lv], self.__scores[:, i] = \
                 self.__config.mode(lv).value.outer_weights_nonmetric(self.__mv_grouped_by_lv,
                                                                      self.__mv_grouped_by_lv_missing, Z[:, i], lv,
                                                                      self.__correction)
-        return np.power(np.abs(y_old) - np.abs(self.__y), 2).sum()
+        return np.power(np.abs(scores_old) - np.abs(self.__scores), 2).sum()
 
     def calculate(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         lvs = list(self.__config.path())
@@ -128,7 +128,7 @@ class _NonmetricWeights:
         weight_factors = 1 / (data_new.dot(weights).std(axis=0, skipna=True) / self.__correction)
         wf_diag = pd.DataFrame(np.diag(weight_factors), index=lvs, columns=lvs)
         weights = weights.dot(wf_diag).sum(axis=1).to_frame(name="weight")
-        return data_new, pd.DataFrame(self.__y, index=self.__index, columns=lvs), weights
+        return data_new, pd.DataFrame(self.__scores, index=self.__index, columns=lvs), weights
 
     def get_Z_for_mode_b(self, lv, mv, z_by_lv):
         mv_index = self.__config.mv_index(lv, mv)
