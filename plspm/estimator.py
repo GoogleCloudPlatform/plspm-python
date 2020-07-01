@@ -44,8 +44,8 @@ class Estimator:
         final_data, scores, weights = calculator.calculate(treated_data, path)
 
         hocs = self.__config.hoc()
-        if None is not None:
-            scale = None if self.__config.metric else Scale.NUM
+        if hocs is not None:
+            scale = None if self.__config.metric() else Scale.NUM
             for hoc in hocs:
                 new_mvs = []
                 cols_to_drop = [col for col in list(data) if col.startswith(hoc + "_")]
