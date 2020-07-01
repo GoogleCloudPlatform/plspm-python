@@ -14,9 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Tuple
 
 import numpy as np, pandas as pd, plspm.config as c, statsmodels.api as sm, plspm.util as util, math
+from typing import Tuple
 from plspm.scheme import Scheme
 from plspm.mode import Mode
 

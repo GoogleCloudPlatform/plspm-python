@@ -16,12 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import plspm.config as c, pandas as pd
+from plspm.weights import WeightsCalculatorFactory
+from typing import Tuple
 
-class HOCEstimator:
+class Estimator:
     def __init__(self, config: c.Config):
         self.__config = config
 
-    def hoc_weights(self, data: pd.DataFrame):
+    def prepare_data(self, data: pd.DataFrame):
         hocs = self.__config.hoc()
         for hoc in hocs:
             new_mvs = []
@@ -35,4 +37,10 @@ class HOCEstimator:
                     self.__config.remove_lv(lv)
             self.__config.add_lv(hoc, self.__config.mode(hoc), *new_mvs)
         return data
+
+    def estimate(self, calculator: WeightsCalculatorFactory, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        treated_data = self.__config.treat(data)
+        final_data, scores, weights = calculator.calculate(treated_data)
+        return final_data, scores, weights
+
                             

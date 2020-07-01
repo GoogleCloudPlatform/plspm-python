@@ -287,8 +287,7 @@ class Config:
                 return util.treat(metric_data, scale=False)
         else:
             if None in self.__mv_scales.values():
-                raise TypeError(
-                    "If you supply a scale for any MV, you must either supply a scale for all of them or specify a default scale.")
+                raise TypeError("If you supply a scale for any MV, you must either supply a scale for all of them or specify a default scale.")
             if set(self.__mv_scales.values()) == {Scale.RAW}:
                 self.__scaled = False
             if set(self.__mv_scales.values()) == {Scale.RAW, Scale.NUM}:

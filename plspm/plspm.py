@@ -20,7 +20,7 @@ import pandas as pd, numpy as np, plspm.weights as w, plspm.outer_model as om, p
 from plspm.scheme import Scheme
 from plspm.unidimensionality import Unidimensionality
 from plspm.bootstrap import Bootstrap
-from plspm.higher_order import HOCEstimator
+from plspm.estimator import Estimator
 
 
 class Plspm:
@@ -57,25 +57,24 @@ class Plspm:
         if bootstrap_iterations < 10:
             bootstrap_iterations = 100
 
-        hoc_estimator = HOCEstimator(config)
-        data_untreated = config.filter(hoc_estimator.hoc_weights(data))
-        treated_data = config.treat(data_untreated)
-        correction = np.sqrt(treated_data.shape[0] / (treated_data.shape[0] - 1))
+        estimator = Estimator(config)
+        filtered_data = config.filter(estimator.prepare_data(data))
+        correction = np.sqrt(filtered_data.shape[0] / (filtered_data.shape[0] - 1))
 
         calculator = w.WeightsCalculatorFactory(config, iterations, tolerance, correction, scheme)
-        final_data, scores, weights = calculator.calculate(treated_data)
+        final_data, scores, weights = estimator.estimate(calculator, filtered_data)
 
         self.__inner_model = im.InnerModel(config.path(), scores)
         self.__outer_model = om.OuterModel(final_data, scores, weights, config.odm(), self.__inner_model.r_squared())
         self.__inner_summary = pis.InnerSummary(config, self.__inner_model.r_squared(),
                                                 self.__inner_model.r_squared_adj(), self.__outer_model.model())
-        self.__unidimensionality = Unidimensionality(config, data_untreated, correction)
+        self.__unidimensionality = Unidimensionality(config, filtered_data, correction)
         self.__scores = scores
         self.__bootstrap = None
         if bootstrap:
-            if (treated_data.shape[0] < 10):
+            if (filtered_data.shape[0] < 10):
                 raise Exception("Bootstrapping could not be performed, at least 10 observations are required.")
-            self.__bootstrap = Bootstrap(config, data_untreated, self.__inner_model, self.__outer_model, calculator,
+            self.__bootstrap = Bootstrap(config, filtered_data, self.__inner_model, self.__outer_model, calculator,
                                          bootstrap_iterations)
 
     def scores(self) -> pd.DataFrame:
