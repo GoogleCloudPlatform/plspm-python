@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import plspm.config as c, pandas as pd
+import plspm.config as c, pandas as pd, numpy.testing as npt
 from plspm.weights import WeightsCalculatorFactory
 from plspm.scale import Scale
 from typing import Tuple
@@ -39,7 +39,7 @@ class Estimator:
         return data
 
     def estimate(self, calculator: WeightsCalculatorFactory, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        path = self.first_stage_path()
+        path = self.first_stage_path_no_hoc()
         treated_data = self.__config.treat(data)
         final_data, scores, weights = calculator.calculate(treated_data, path)
 
@@ -48,10 +48,8 @@ class Estimator:
             scale = None if self.__config.metric() else Scale.NUM
             for hoc in hocs:
                 new_mvs = []
-                cols_to_drop = [col for col in list(data) if col.startswith(hoc + "_")]
-                data = data.drop(columns=cols_to_drop)
                 for lv in hocs[hoc]:
-                    mv_new = hoc + "_" + lv
+                    mv_new = lv
                     data[mv_new] = scores[lv]
                     new_mvs.append(c.MV(mv_new, scale))
                 self.__config.add_lv(hoc, self.__config.mode(hoc), *new_mvs)
@@ -71,5 +69,17 @@ class Estimator:
             for lv in list(exogenous[exogenous == 1].index):
                 structure.add_path([lv], lvs)
         return structure.path()
-            
-            
+    
+    def first_stage_path_no_hoc(self) -> pd.DataFrame:
+        path = self.__config.path()
+        for hoc, lvs in self.__config.hoc().items():
+            structure = c.Structure(path)
+            exogenous = path.loc[hoc]
+            endogenous = path.loc[:,hoc]
+            # structure.add_path(lvs, [hoc])
+            for lv in list(exogenous[exogenous == 1].index):
+                structure.add_path([lv], lvs)
+            for lv in list(endogenous[endogenous == 1].index):
+                structure.add_path(lvs, [lv])
+            path = structure.path().drop(hoc).drop(hoc,axis = 1)
+        return path
