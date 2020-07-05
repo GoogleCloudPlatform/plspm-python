@@ -2,13 +2,26 @@
 
 _Please note: This is not an officially supported Google product._
 
-**plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a port of the R package [plspm](https://github.com/gastonstat/plspm).
+**plspm** is a Python 3 package dedicated to Partial Least Squares Path Modeling (PLS-PM) analysis. It is a port of the R package [plspm](https://github.com/gastonstat/plspm), with additional features adopted from the R package [seminr](https://github.com/sem-in-r/seminr)
 
 PLSPM (partial least squares path modeling) is a correlation-based structural equation modeling (SEM) algorithm. It allows for estimation of complex cause-effect or prediction models using latent/manifest variables. 
 
 PLSPM may be preferred to other SEM methods for several reasons: it is a method that is appropriate for exploratory research, can be used with small-to-medium sample sizes (as well as large data sets), and does not require assumptions of multivariate normality. (See Hulland, J. (1999). Use of partial least squares (PLS) in strategic management research: a review of four recent studies. Strategic management journal, 20(2), 195-204.) In contrast to covariance-based SEM (CBSEM), goodness of fit is less important, because the purpose of the algorithm is to optimize for prediction of the dependent variable vs. fit of data to a predetermined model. (See "goodness of fit" vs "goodness of model" in Chin, W. W. (2010). How to write up and report PLS analyses. In Handbook of partial least squares (pp. 655-690). Springer, Berlin, Heidelberg.)
 
-This library will calculate using modes A (for reflective relationships) and B (for formative relationships) with metric and non-metric numerical data using centroid, factorial, and path schemes. Bootstrap validation is available, and reliability measures are also calculated using the same methods as the original R library.
+### Features
+
+* Uses variance-based PLS esimation to model composite constructs using Mode A and Mode B
+* Uses a natural-feeling, domain specific language to build and estimate structural equation models, including second-order constructs
+* Supports centroid, factorial, and path schemes
+* Supports metric and non-metric numerical data (including nominal and ordinal)
+* Handles missing data
+* Tested against [seminr](https://github.com/sem-in-r/seminr), which is, in turn, tested against SmartPLS (Ringle et al., 2015) and ADANCO (Henseler and Dijkstra, 2015), as well as other R packages such as semPLS (Monecke and Leisch, 2012) and matrixpls (Rönkkö, 2016).
+
+### Planned but not yet implemented
+
+* Native modeling of moderation
+* Improved assessment measures such as HTMT, VIF, f^2, Q^2, and q^2
+* Modeling formative constructs using the PLS consistent (PLSc) algorithm
 
 ## Installation
 You can install the latest version of this package using pip:
@@ -77,7 +90,42 @@ SAT   0.200724 -0.002754  0.122145  0.589331  0.000000    0
 LOY   0.275150  0.000000  0.000000  0.000000  0.495479    0
 ```
 
-### PLS-PM with Nonmetric Data
+### Specifying higher-order constructs
+
+Example using [seminr](https://github.com/sem-in-r/seminr)'s mobile industry data set:
+
+```py
+mobi = pd.read_csv("file:tests/data/mobi.csv", index_col=0)
+
+structure = c.Structure()
+structure.add_path(["Expectation", "Quality"], ["Satisfaction"])
+structure.add_path(["Satisfaction"], ["Complaints", "Loyalty"])
+
+config = c.Config(structure.path(), default_scale=Scale.NUM)
+config.add_higher_order("Satisfaction", Mode.A, ["Image", "Value"])
+config.add_lv_with_columns_named("Expectation", Mode.A, mobi, "CUEX")
+config.add_lv_with_columns_named("Quality", Mode.B, mobi, "PERQ")
+config.add_lv_with_columns_named("Loyalty", Mode.A, mobi, "CUSL")
+config.add_lv_with_columns_named("Image", Mode.A, mobi, "IMAG")
+config.add_lv_with_columns_named("Complaints", Mode.A, mobi, "CUSCO")
+config.add_lv_with_columns_named("Value", Mode.A, mobi, "PERV")
+
+mobi_pls = Plspm(mobi, config, Scheme.PATH, 100, 0.00000001)
+
+print(plspm_calc.inner_model())
+```
+
+This will produce the output:
+```
+                                     from            to  estimate  std error          t         p>|t|
+index                                                                                                
+Quality -> Satisfaction           Quality  Satisfaction  0.743041   0.046318  16.042102  3.633866e-40
+Expectation -> Satisfaction   Expectation  Satisfaction  0.089572   0.046318   1.933832  5.427626e-02
+Satisfaction -> Loyalty      Satisfaction       Loyalty  0.627940   0.049420  12.706272  7.996788e-29
+Satisfaction -> Complaints   Satisfaction    Complaints  0.486696   0.055472   8.773752  2.841768e-16
+```
+
+### PLS-PM with nonmetric data
 
 Example with the classic Russett data (original data set)
 
