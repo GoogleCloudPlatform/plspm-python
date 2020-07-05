@@ -17,7 +17,7 @@
 
 import plspm.config as c, pandas as pd, numpy as np, plspm.inner_model as im, plspm.outer_model as om
 from plspm.weights import WeightsCalculatorFactory
-
+from plspm.estimator import Estimator
 
 def _create_summary(data: pd.DataFrame, original):
     summary = pd.DataFrame(0, index=data.columns, columns=["original", "mean", "std.error", "perc.025", "perc.975", "t stat."])
@@ -43,11 +43,11 @@ class Bootstrap:
         total_effects = pd.DataFrame(columns=inner_model.effects().index)
         paths = pd.DataFrame(columns=inner_model.effects().index)
         loadings = pd.DataFrame(columns=data.columns)
+        estimator = Estimator(config)
         for i in range(1, iterations):
             try:
                 boot_observations = np.random.randint(observations, size=observations)
-                boot_data = config.treat(data.iloc[boot_observations, :])
-                _final_data, _scores, _weights = calculator.calculate(boot_data, config.path())
+                _final_data, _scores, _weights = estimator.estimate(calculator, data.iloc[boot_observations, :])
                 weights = weights.append(_weights.T, ignore_index=True)
                 inner_model = im.InnerModel(config.path(), _scores)
                 r_squared = r_squared.append(inner_model.r_squared().T, ignore_index=True)

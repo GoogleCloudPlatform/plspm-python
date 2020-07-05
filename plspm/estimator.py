@@ -23,11 +23,13 @@ from typing import Tuple
 class Estimator:
     def __init__(self, config: c.Config):
         self.__config = config
+        self.__hoc_path_first_stage = self.hoc_path_first_stage()
 
     def estimate(self, calculator: WeightsCalculatorFactory, data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         hocs = self.__config.hoc()
+
         if hocs is not None:
-            path = self.hoc_path_first_stage()
+            path = self.__hoc_path_first_stage
 
         treated_data = self.__config.treat(data)
         final_data, scores, weights = calculator.calculate(treated_data, path)
