@@ -243,10 +243,11 @@ class Config:
             ValueError: if the dataset is missing any columns with names that were specified as manifest variables in the model, or if there are any non-numeric values in the dataset.
         """
         hoc_lvs = [item for lvs in self.__hoc.values() for item in lvs]
-        if set(self.__mvs.keys()) != set(list(self.path()) + hoc_lvs):
+        path_lvs = filter(lambda i: i not in self.__hoc.keys(), list(self.path()) + hoc_lvs)
+        if set(self.__mvs.keys()) != set(path_lvs):
             raise ValueError(
                 "The Path matrix supplied does not specify the same latent variables as you added when configuring manifest variables." +
-                " Path: " + ",".join(set(self.path())) + " LVs: " + ",".join(set(self.__mvs.keys())))
+                " Path: " + ", ".join(path_lvs) + " LVs: " + ", ".join(set(self.__mvs.keys())))
         if not set(self.__mv_scales.keys()).issubset(set(data)):
             raise ValueError(
                 "The following manifest variables you configured are not present in the data set: " + ", ".join(

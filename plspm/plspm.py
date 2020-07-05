@@ -58,7 +58,7 @@ class Plspm:
             bootstrap_iterations = 100
 
         estimator = Estimator(config)
-        filtered_data = config.filter(estimator.prepare_data(data))
+        filtered_data = config.filter(data)
         correction = np.sqrt(filtered_data.shape[0] / (filtered_data.shape[0] - 1))
 
         calculator = w.WeightsCalculatorFactory(config, iterations, tolerance, correction, scheme)

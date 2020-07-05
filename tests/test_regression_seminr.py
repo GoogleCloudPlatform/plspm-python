@@ -67,8 +67,8 @@ def test_hoc_two_stage():
     indices = list(set(expected_outer_model.index.values.tolist()).intersection(set(actual_outer_model.index.values.tolist())))
     expected_outer_model = expected_outer_model.loc[indices].sort_index().sort_index(axis=1)
     actual_outer_model = actual_outer_model.loc[indices].sort_index().sort_index(axis=1)
-    npt.assert_allclose(expected_outer_model, actual_outer_model, rtol=0.8)
+    npt.assert_allclose(expected_outer_model, actual_outer_model, rtol=1e-4)
 
     expected_paths = pd.read_csv("file:tests/data/seminr-mobi-hoc-ts-paths.csv", index_col=0).transpose()
     actual_paths = mobi_pls.path_coefficients()
-    npt.assert_allclose(expected_paths.sort_index().sort_index(axis=1), actual_paths.sort_index().sort_index(axis=1), rtol=0.8)
+    npt.assert_allclose(expected_paths.sort_index().sort_index(axis=1), actual_paths.sort_index().sort_index(axis=1), rtol=1e-6)
