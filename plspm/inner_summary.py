@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pandas as pd, numpy as np
+import pandas as pd, numpy as np, math
 from plspm.config import Config
 from plspm.mode import Mode
 
@@ -46,9 +46,13 @@ class InnerSummary:
                 communality_aux.append(block_communality.loc[lv])
         self.__summary = pd.concat([lv_type_text, r_squared, r_squared_adj, block_communality, mean_redundancy, ave], axis=1,
                                    sort=True)
-        mean_communality = sum(x * y for x, y in zip(communality_aux, num_mvs_in_lv)) / sum(num_mvs_in_lv)
-        r_squared_aux = r_squared * lv_type
-        self.__goodness_of_fit = np.sqrt(mean_communality * r_squared_aux[r_squared_aux != 0].mean())
+        if sum(num_mvs_in_lv) > 0:
+            mean_communality = sum(x * y for x, y in zip(communality_aux, num_mvs_in_lv)) / sum(num_mvs_in_lv)
+            r_squared_aux = r_squared * lv_type
+            self.__goodness_of_fit = np.sqrt(mean_communality * r_squared_aux[r_squared_aux != 0].mean())
+        else:
+            # All constructs are single-item so we can't calculate goodness-of-fit
+            self.__goodness_of_fit = float("NaN")
 
     def summary(self) -> pd.DataFrame:
         """Internal method that returns the summary of the inner model."""
@@ -56,4 +60,6 @@ class InnerSummary:
 
     def goodness_of_fit(self) -> float:
         """Internal method that returns the goodness-of-fit of the model."""
+        if math.isnan(self.__goodness_of_fit):
+            raise ValueError("Cannot calculate goodness-of-fit if all constructs are single-item.")
         return self.__goodness_of_fit
