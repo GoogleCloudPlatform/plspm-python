@@ -32,5 +32,5 @@ def test_can_add_hoc_lv_paths_correctly():
     structure.add_path(["MANDRILL", "BONOBO"], ["GOUDA"])
     structure.add_path(["GOUDA", "CHEDDAR"], ["GOAT"])
     expected = structure.path().drop("APE").drop("APE", axis=1)
-    actual = estimator.hoc_path_first_stage()
+    actual = estimator.hoc_path_first_stage(config)
     pt.assert_frame_equal(expected, actual)

@@ -50,8 +50,12 @@ class Estimator:
                     new_mvs.append(c.MV(mv_new, scale))
                 config.add_lv(hoc, config.mode(hoc), *new_mvs)
             final_data, scores, weights = calculator.calculate(treated_data, config.path())
+        self.__config = config
 
         return final_data, scores, weights
+
+    def config(self):
+        return self.__config
 
     def hoc_path_first_stage(self, config: c.Config) -> pd.DataFrame:
         # For first pass, for HOCs we'll create paths from each and for each exogenous LV to the HOC's constituent LVs,

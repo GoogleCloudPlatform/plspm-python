@@ -15,6 +15,7 @@ PLSPM may be preferred to other SEM methods for several reasons: it is a method 
 * Supports centroid, factorial, and path schemes
 * Supports metric and non-metric numerical data (including nominal and ordinal)
 * Handles missing data
+* Bootstrapping with multi-core support
 * Tested against [seminr](https://github.com/sem-in-r/seminr), which is, in turn, tested against SmartPLS (Ringle et al., 2015) and ADANCO (Henseler and Dijkstra, 2015), as well as other R packages such as semPLS (Monecke and Leisch, 2012) and matrixpls (Rönkkö, 2016).
 
 ### Planned but not yet implemented
