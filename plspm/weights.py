@@ -163,6 +163,12 @@ class WeightsCalculatorFactory:
         self.__correction = correction
         self.__scheme = scheme
 
+    def clone(self):
+        return WeightsCalculatorFactory(self.__config.clone(), self.__iterations, self.__tolerance, self.__correction, self.__scheme)
+
+    def config(self):
+        return self.__config
+
     def calculate(self, data: pd.DataFrame, path: pd.DataFrame):
         """Internal method that performs the calculation to estimate weights and scores."""
         if self.__config.metric():

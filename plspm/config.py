@@ -104,6 +104,7 @@ class Config:
         self.__scaled = scaled
         self.__metric = True
         self.__default_scale = default_scale
+        self.__missing = False
         if not isinstance(path, pd.DataFrame):
             raise TypeError("Path argument must be a Pandas DataFrame")
         path_shape = path.shape
@@ -120,6 +121,17 @@ class Config:
         except:
             raise ValueError("Path matrix must have matching row and column index names")
         self.__path = path
+
+    def clone(self):
+        my_clone = Config(self.__path, self.__scaled, self.__default_scale)
+        my_clone.__modes = self.__modes.copy()
+        my_clone.__mvs = self.__mvs.copy()
+        my_clone.__hoc = self.__hoc.copy()
+        my_clone.__dummies = self.__dummies.copy()
+        my_clone.__mv_scales = self.__mv_scales.copy()
+        my_clone.__metric = self.__metric
+        my_clone.__missing = self.__missing
+        return my_clone
 
     def path(self):
         """Internal method that returns the matrix of paths provided in the constructor."""

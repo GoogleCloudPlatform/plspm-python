@@ -34,7 +34,7 @@ class Plspm:
 
     def __init__(self, data: pd.DataFrame, config: c.Config, scheme: Scheme = Scheme.CENTROID,
                  iterations: int = 100, tolerance: float = 0.000001, bootstrap: bool = False,
-                 bootstrap_iterations: int = 100):
+                 bootstrap_iterations: int = 100, threads: int = 2):
         """Creates an instance of the path model calculator.
 
         Args:
@@ -45,6 +45,7 @@ class Plspm:
             tolerance: The tolerance criterion for iterations (default 0.000001, must be >0)
             bootstrap: Whether to perform bootstrap validation (default is not to perform validation)
             bootstrap_iterations: The number of bootstrap samples to use if bootstrap validation is enabled (default and minimum 100)
+            threads: The number of threads to use while bootstrapping (bootstrap_iterations must be a multiple of threads)
 
         Raises:
             Exception: if the algorithm cannot converge, or if the requested configuration could not be calculated
@@ -56,6 +57,8 @@ class Plspm:
         assert scheme in Scheme
         if bootstrap_iterations < 10:
             bootstrap_iterations = 100
+        assert threads > 0
+        assert bootstrap_iterations % threads == 0
 
         estimator = Estimator(config)
         filtered_data = config.filter(data)
@@ -75,7 +78,7 @@ class Plspm:
             if (filtered_data.shape[0] < 10):
                 raise Exception("Bootstrapping could not be performed, at least 10 observations are required.")
             self.__bootstrap = Bootstrap(config, filtered_data, self.__inner_model, self.__outer_model, calculator,
-                                         bootstrap_iterations)
+                                         bootstrap_iterations, threads)
 
     def scores(self) -> pd.DataFrame:
         """Gets the latent variable scores
