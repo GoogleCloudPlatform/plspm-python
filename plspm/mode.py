@@ -20,7 +20,10 @@ from enum import Enum
 from typing import Tuple
 
 
-class _ModeA:
+class _ModeA(util.Value):
+
+    def __init__(self):
+        super().__init__("A")
 
     def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list) -> pd.DataFrame:
         return (1 / data.shape[0]) * Z.loc[:, [lv]].T.dot(data.loc[:, mvs]).T
@@ -39,7 +42,10 @@ class _ModeA:
         return weights, Y
 
 
-class _ModeB:
+class _ModeB(util.Value):
+
+    def __init__(self):
+        super().__init__("B")
 
     def outer_weights_metric(self, data: pd.DataFrame, Z: pd.DataFrame, lv: str, mvs: list) -> pd.DataFrame:
         w, _, _, _ = linalg.lstsq(data.loc[:, mvs], Z.loc[:, [lv]])

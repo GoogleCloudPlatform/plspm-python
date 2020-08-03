@@ -19,7 +19,10 @@ import plspm.util as util, pandas as pd, numpy as np
 from enum import Enum
 
 
-class _Numeric:
+class _Numeric(util.Value):
+
+    def __init__(self):
+        super().__init__(1)
 
     def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
         data = weights.mv_grouped_by_lv(lv, mv)
@@ -27,13 +30,19 @@ class _Numeric:
         return util.treat_numpy(data) * np.sqrt(finite_elements / (finite_elements - 1))
 
 
-class _Raw:
+class _Raw(util.Value):
+
+    def __init__(self):
+        super().__init__(2)
 
     def scale(self, lv: str, mv: str, z_by_lv: pd.Series, weights) -> pd.DataFrame:
         return weights.mv_grouped_by_lv(lv, mv)
 
 
-class _Ordinal:
+class _Ordinal(util.Value):
+
+    def __init__(self):
+        super().__init__(3)
 
     def _quantify(self, dummies, z_by_lv):
         scaling = [0] * (len(dummies[0]))
@@ -67,7 +76,10 @@ class _Ordinal:
         return scaled
 
 
-class _Nominal:
+class _Nominal(util.Value):
+
+    def __init__(self):
+        super().__init__(4)
 
     def scale(self, lv: str, mv: str, z_by_lv: np.ndarray, weights) -> pd.DataFrame:
         z_by_lv = weights.get_Z_for_mode_b(lv, mv, z_by_lv)

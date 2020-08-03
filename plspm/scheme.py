@@ -15,23 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import statsmodels.api as sm, numpy as np, pandas as pd
+import statsmodels.api as sm, numpy as np, pandas as pd, plspm.util as util
 from enum import Enum
 
 
-class _CentroidInnerWeightCalculator:
+class _CentroidInnerWeightCalculator(util.Value):
+
+    def __init__(self):
+        super().__init__("C")
 
     def calculate(self, path: pd.DataFrame, y: np.ndarray) -> np.ndarray:
         return np.sign(np.corrcoef(y, rowvar=False) * (path + path.transpose()))
 
 
-class _FactorialInnerWeightCalculator:
+class _FactorialInnerWeightCalculator(util.Value):
+
+    def __init__(self):
+        super().__init__("F")
 
     def calculate(self, path: pd.DataFrame, y: np.ndarray) -> np.ndarray:
         return np.cov(y, rowvar=False) * (path + path.transpose())
 
 
-class _PathInnerWeightCalculator:
+class _PathInnerWeightCalculator(util.Value):
+
+    def __init__(self):
+        super().__init__("P")
 
     def calculate(self, path: pd.DataFrame, y: np.ndarray) -> np.ndarray:
         E = path.values.astype(np.float64)

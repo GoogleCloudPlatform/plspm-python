@@ -112,8 +112,20 @@ def groupby_mean(data: np.ndarray) -> np.ndarray:
     return means
 
 
+class Value:
+    """Internal class which models a value type"""
+    def __init__(self, val):
+        self.__value = val
+
+    def __eq__(self, other):
+        return self.__value == other.__value 
+
+    def __ne__(self, other):
+        return self.__value != other.__value 
+
+
 class TopoSort:
-    """Internal fucntion which performs a topological sort using Kahn's algorithm"""
+    """Internal function which performs a topological sort using Kahn's algorithm"""
 
     def __init__(self):
         self.__indegree = c.Counter()
