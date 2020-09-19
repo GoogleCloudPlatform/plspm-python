@@ -220,4 +220,4 @@ plspm_calc = Plspm(russa, config, Scheme.CENTROID, 100, 0.0000001)
   (`humble at google.com`)
 
 [Nicole Forsgren](https://nicolefv.com/)
-  (`nicolefv at google.com`)
+  (`nicolefv at github.com`)
